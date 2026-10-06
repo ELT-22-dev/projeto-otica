@@ -11,6 +11,7 @@ import { casosDeUso } from "@/infra/container";
 import { formatearFecha, formatearInstante, formatearReales } from "@/lib/format";
 import { moduloActivo } from "@/lib/modulos";
 import { oNotFound } from "../../../_lib/o-not-found";
+import { BotonEliminarCliente } from "./BotonEliminarCliente";
 
 export const metadata: Metadata = { title: t.detalle.cliente };
 
@@ -18,7 +19,11 @@ const VACIO = "rounded-2xl border border-dashed px-4 py-6 text-center text-sm te
 
 export default async function PaginaCliente({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { cliente, pedidos, recetas, notificaciones } = await oNotFound((await casosDeUso()).obtenerFichaCliente(id));
+  const casos = await casosDeUso();
+  const [{ cliente, pedidos, recetas, notificaciones }, contexto] = await Promise.all([
+    oNotFound(casos.obtenerFichaCliente(id)),
+    casos.obtenerContexto(),
+  ]);
   const numeroDe = new Map(pedidos.map((p) => [p.id, p.numero]));
 
   return (
@@ -125,6 +130,8 @@ export default async function PaginaCliente({ params }: { params: Promise<{ id: 
           </section>
         </div>
       </div>
+
+      {contexto?.usuario.rol === "admin" && <BotonEliminarCliente id={cliente.id} nombre={cliente.nombre} />}
     </div>
   );
 }

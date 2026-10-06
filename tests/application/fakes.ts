@@ -144,6 +144,10 @@ export function crearFakes(
       async obtenerPorId(id) {
         return clientes.get(id) ?? null;
       },
+      async eliminar(id) {
+        for (const [pid, p] of pedidos) if (p.clienteId === id) pedidos.delete(pid);
+        return clientes.delete(id);
+      },
       async buscarPorWhatsapp(variantes) {
         return [...clientes.values()].filter((c) => variantes.includes(c.whatsapp));
       },

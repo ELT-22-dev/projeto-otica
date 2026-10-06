@@ -231,3 +231,22 @@ describe("interpretarBusqueda", () => {
     expect(interpretarBusqueda(texto)).toEqual(esperado);
   });
 });
+
+describe("eliminarCliente", () => {
+  it("só o admin apaga; leva os pedidos junto", async () => {
+    const f = crearFakes({ usuario: ADMIN });
+    const casos = crearCasosDeUso(f.deps);
+    const { clienteId } = await casos.crearPedido(nuevoPedido());
+
+    await expect(
+      crearCasosDeUso({
+        ...f.deps,
+        sesion: { usuarioActual: async () => ({ ...ADMIN, rol: "atendente" }) },
+      }).eliminarCliente(clienteId),
+    ).rejects.toThrow("no_autorizado");
+    await casos.eliminarCliente(clienteId);
+    expect(f.clientes.has(clienteId)).toBe(false);
+    expect(f.pedidos.size).toBe(0);
+    await expect(casos.eliminarCliente(clienteId)).rejects.toThrow("no_encontrado");
+  });
+});

@@ -414,3 +414,36 @@ describe("agenda e WhatsApp no banco", () => {
     expect((await c.resumenWhatsapp()).atencion).toBe(0);
   });
 });
+
+describe("eliminar cliente no banco", () => {
+  it("apaga pedidos, receitas, avisos, citas e mensagens; os outros clientes ficam intactos", async () => {
+    const admin = casos({ ...usuario, rol: "admin" });
+    const [carlos] = await admin.buscarClientes("carlos");
+    const id = carlos!.id;
+    await admin.avisarRenovacion(id);
+    await admin.crearCita({ cliente: { tipo: "existente", id }, fecha: HOY, hora: "17:00", avisar: false });
+    await crearCasosDeUsoBot(dependencias()).registrarMensajeCliente({
+      jid: `${carlos!.whatsapp}@s.whatsapp.net`,
+      whatsapp: carlos!.whatsapp,
+      nombre: "Carlos",
+      texto: "hola",
+      idExterno: "msg-carlos",
+    });
+    const antes = await db.query<{ n: number }>("select count(*)::int as n from clientes");
+
+    await admin.eliminarCliente(id);
+
+    const resto = await db.query<{ tabla: string; n: number }>(
+      `select 'pedidos' tabla, count(*)::int n from pedidos where cliente_id = $1
+       union all select 'recetas', count(*)::int from recetas where cliente_id = $1
+       union all select 'notificaciones', count(*)::int from notificaciones where cliente_id = $1
+       union all select 'citas', count(*)::int from citas where cliente_id = $1
+       union all select 'mensajes', count(*)::int from mensajes_whatsapp where whatsapp = $2`,
+      [id, carlos!.whatsapp],
+    );
+    expect(resto.rows.every((r) => r.n === 0)).toBe(true);
+    const despues = await db.query<{ n: number }>("select count(*)::int as n from clientes");
+    expect(despues.rows[0]!.n).toBe(antes.rows[0]!.n - 1);
+    await expect(admin.obtenerFichaCliente(id)).rejects.toThrow("no_encontrado");
+  });
+});

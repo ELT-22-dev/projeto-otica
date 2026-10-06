@@ -1,6 +1,6 @@
 import { avisarRenovacion, generarAvisoCliente, listoYAvisar } from "./avisos/avisos";
 import { cambiarEstadoCita, confirmarCita, crearCita, obtenerAgenda, resumenAgenda } from "./citas/citas";
-import { buscarClientes, obtenerFichaCliente } from "./clientes/clientes";
+import { buscarClientes, eliminarCliente, obtenerFichaCliente } from "./clientes/clientes";
 import { obtenerPorAvisar } from "./avisos/porAvisar";
 import type { Dependencias } from "./dependencias";
 import {
@@ -45,6 +45,7 @@ export function crearCasosDeUso(deps: Dependencias) {
     avisarRenovacion: avisarRenovacion(deps),
     buscarClientes: buscarClientes(deps),
     obtenerFichaCliente: obtenerFichaCliente(deps),
+    eliminarCliente: eliminarCliente(deps),
     obtenerContexto: obtenerContexto(deps),
     obtenerConfiguracion: obtenerConfiguracion(deps),
     actualizarConfiguracion: actualizarConfiguracion(deps),

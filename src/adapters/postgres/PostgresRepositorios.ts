@@ -60,6 +60,16 @@ export class PostgresClienteRepository implements ClienteRepository {
     return filas[0] ? aCliente(filas[0]) : null;
   }
 
+  async eliminar(id: string): Promise<boolean> {
+    const [f] = await consultar<{ eliminado: boolean }>(
+      this.sql,
+      "eliminar cliente",
+      "select eliminar_cliente($1) as eliminado",
+      [id],
+    );
+    return f?.eliminado === true;
+  }
+
   async buscarPorWhatsapp(variantes: string[]): Promise<Cliente[]> {
     if (variantes.length === 0) return [];
     const filas = await consultar<FilaCliente>(

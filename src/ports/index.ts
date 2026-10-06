@@ -39,6 +39,8 @@ export interface ClienteRepository {
   obtenerPorId(id: string): Promise<Cliente | null>;
   /** Clientes com qualquer uma dessas formas do número (ver variantesWhatsapp). */
   buscarPorWhatsapp(variantes: WhatsappE164[]): Promise<Cliente[]>;
+  /** Apaga o cliente com pedidos, receitas, avisos, citas e mensagens. false se não existia. */
+  eliminar(id: string): Promise<boolean>;
 }
 
 export interface PedidoRepository {

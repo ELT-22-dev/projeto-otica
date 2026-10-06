@@ -174,6 +174,11 @@ export const es = {
     sinAvisos: "Ningún aviso todavía.",
     tipoAviso: { listo: "Listo", renovacion: "Renovación", cita: "Cita" },
     noEncontrado: "Cliente no encontrado.",
+    eliminar: "Eliminar cliente",
+    eliminarAyuda: "Borra al cliente con sus pedidos, recetas, citas y mensajes. No se puede deshacer.",
+    confirmarEliminar: (nombre: string) =>
+      `¿Eliminar a ${nombre}? Se borrarán sus pedidos, recetas, citas y mensajes. No se puede deshacer.`,
+    eliminado: "Cliente eliminado",
   },
   renovaciones: {
     titulo: "Renovaciones",

@@ -1,6 +1,6 @@
 import { normalizarBusqueda } from "@/domain/cliente/Cliente";
 import { ErrorDominio } from "@/domain/shared/errores";
-import { requerirUsuario, type Dependencias } from "../dependencias";
+import { requerirAdmin, requerirUsuario, type Dependencias } from "../dependencias";
 import { esquemaBuscarClientes, esquemaId } from "../esquemas";
 
 const LIMITE_SUGERENCIAS = 8;
@@ -15,6 +15,15 @@ export function buscarClientes(deps: Pick<Dependencias, "clientes" | "sesion">) 
     const nombre = normalizarBusqueda(texto);
     if (nombre.length < 2) return [];
     return deps.clientes.buscar({ nombre }, LIMITE_SUGERENCIAS);
+  };
+}
+
+/** Só o administrador: apaga o cliente e todo o histórico dele. Não tem volta. */
+export function eliminarCliente(deps: Pick<Dependencias, "clientes" | "sesion">) {
+  return async (entrada: unknown): Promise<void> => {
+    await requerirAdmin(deps.sesion);
+    const id = esquemaId.parse(entrada);
+    if (!(await deps.clientes.eliminar(id))) throw new ErrorDominio("no_encontrado", "cliente");
   };
 }
 

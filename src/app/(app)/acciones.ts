@@ -60,6 +60,15 @@ export async function buscarClientesAccion(texto: string): Promise<ResultadoAcci
   });
 }
 
+export async function eliminarClienteAccion(id: string): Promise<ResultadoAccion> {
+  const r = await ejecutar(async () => {
+    await (await casosDeUso()).eliminarCliente(id);
+    return null;
+  });
+  if (r.ok) refrescar();
+  return r;
+}
+
 export async function actualizarConfiguracionAccion(entrada: unknown): Promise<ResultadoAccion> {
   const r = await ejecutar(async () => {
     await (await casosDeUso()).actualizarConfiguracion(entrada);
