@@ -19,7 +19,11 @@ export function BotonAvisarRenovacion({ clienteId, avisadoEl }: { clienteId: str
       )}
       <Button
         variant={avisadoEl ? "outline" : "default"}
-        className={avisadoEl ? "h-11" : "h-11 flex-1 bg-emerald-600 text-base text-white hover:bg-emerald-700"}
+        className={
+          avisadoEl
+            ? "h-11 rounded-xl"
+            : "h-11 flex-1 rounded-xl bg-emerald-600 text-base text-white hover:bg-emerald-700"
+        }
         disabled={pendiente}
         onClick={() => ejecutar(() => avisarRenovacionAccion(clienteId))}
       >

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, UserCheck, X } from "lucide-react";
+import { ChevronDown, Eye, Glasses, UserCheck, UserRound, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -9,6 +9,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { IconoTono, TituloSeccion } from "@/components/visual";
 import { formatearWhatsapp } from "@/domain/cliente/telefono";
 import { formatearNumeroPedido } from "@/domain/pedido/numero-pedido";
 import { sumarDias } from "@/domain/shared/fecha";
@@ -114,10 +115,12 @@ export function FormNuevoPedido({ hoy, idiomaDefault }: { hoy: string; idiomaDef
     error?.campo && campos.includes(error.campo) ? <p className="text-sm text-destructive">{error.mensaje}</p> : null;
 
   return (
-    <form onSubmit={enviar} className="grid gap-5 lg:grid-cols-2 lg:items-start" noValidate>
+    <form onSubmit={enviar} className="grid gap-4 md:grid-cols-2 md:items-start lg:gap-5" noValidate>
       {/* Cliente */}
-      <section className="flex flex-col gap-3 rounded-xl border bg-card p-4">
-        <h2 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">{t.nuevo.cliente}</h2>
+      <section className="flex flex-col gap-3 rounded-2xl border bg-card p-4 shadow-xs md:p-5">
+        <TituloSeccion icono={UserRound} tono="violeta">
+          {t.nuevo.cliente}
+        </TituloSeccion>
 
         {elegido ? (
           <div className="flex items-center gap-3 rounded-lg bg-primary/5 p-3 ring-1 ring-primary/20">
@@ -212,8 +215,10 @@ export function FormNuevoPedido({ hoy, idiomaDefault }: { hoy: string; idiomaDef
       </section>
 
       {/* Pedido */}
-      <section className="flex flex-col gap-3 rounded-xl border bg-card p-4">
-        <h2 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">{t.nuevo.pedido}</h2>
+      <section className="flex flex-col gap-3 rounded-2xl border bg-card p-4 shadow-xs md:p-5">
+        <TituloSeccion icono={Glasses} tono="cielo">
+          {t.nuevo.pedido}
+        </TituloSeccion>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="descripcion">{t.nuevo.descripcion} *</Label>
           <Input
@@ -297,13 +302,14 @@ export function FormNuevoPedido({ hoy, idiomaDefault }: { hoy: string; idiomaDef
       <Collapsible
         open={recetaAbierta}
         onOpenChange={setRecetaAbierta}
-        className="rounded-xl border bg-card lg:col-span-2"
+        className="rounded-2xl border bg-card shadow-xs md:col-span-2"
       >
-        <CollapsibleTrigger className="flex w-full items-center justify-between p-4 text-left">
-          <span className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">{t.nuevo.receta}</span>
+        <CollapsibleTrigger className="flex w-full items-center gap-2.5 p-4 text-left md:p-5">
+          <IconoTono icono={Eye} tono="rosa" />
+          <span className="flex-1 text-sm font-semibold">{t.nuevo.receta}</span>
           <ChevronDown className={cn("size-5 text-muted-foreground transition", recetaAbierta && "rotate-180")} />
         </CollapsibleTrigger>
-        <CollapsibleContent className="grid gap-4 px-4 pb-4 lg:grid-cols-2 lg:gap-x-8">
+        <CollapsibleContent className="grid gap-4 px-4 pb-4 md:px-5 md:pb-5 lg:grid-cols-2 lg:gap-x-8">
           <div className="grid grid-cols-[auto_1fr_1fr_1fr] items-center gap-2 text-sm">
             <span />
             <span className="text-center text-xs text-muted-foreground">{t.receta.esfera}</span>
@@ -347,7 +353,7 @@ export function FormNuevoPedido({ hoy, idiomaDefault }: { hoy: string; idiomaDef
       </Collapsible>
 
       {error && !error.campo && (
-        <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive lg:col-span-2">
+        <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive md:col-span-2">
           {error.mensaje}
         </p>
       )}
@@ -355,7 +361,7 @@ export function FormNuevoPedido({ hoy, idiomaDefault }: { hoy: string; idiomaDef
       <Button
         type="submit"
         disabled={guardando}
-        className="h-14 text-base font-semibold lg:col-span-2 lg:ml-auto lg:h-12 lg:w-72"
+        className="h-14 text-base font-semibold bg-marca border-0 shadow-lg shadow-violet-500/25 hover:brightness-110 md:col-span-2 md:ml-auto md:h-12 md:w-72"
       >
         {guardando ? t.nuevo.guardando : t.nuevo.guardar}
       </Button>

@@ -21,7 +21,7 @@ export function FormLogin() {
           autoComplete="email"
           inputMode="email"
           required
-          className="h-12 text-base"
+          className="h-12 rounded-xl text-base"
         />
       </div>
       <div className="flex flex-col gap-2">
@@ -32,7 +32,7 @@ export function FormLogin() {
           type="password"
           autoComplete="current-password"
           required
-          className="h-12 text-base"
+          className="h-12 rounded-xl text-base"
         />
       </div>
       {estado.error && (
@@ -40,7 +40,11 @@ export function FormLogin() {
           {estado.error}
         </p>
       )}
-      <Button type="submit" disabled={pendiente} className="h-12 text-base">
+      <Button
+        type="submit"
+        disabled={pendiente}
+        className="bg-marca h-12 rounded-xl border-0 text-base shadow-lg shadow-violet-500/25 hover:brightness-110"
+      >
         {pendiente ? t.login.entrando : t.login.entrar}
       </Button>
     </form>

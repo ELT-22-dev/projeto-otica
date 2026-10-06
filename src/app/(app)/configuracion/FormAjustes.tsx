@@ -1,11 +1,13 @@
 "use client";
 
+import { MessageSquareText, Store } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { TituloSeccion } from "@/components/visual";
 import type { Idioma } from "@/domain/shared/idioma";
 import { t } from "@/i18n";
 import { cn } from "@/lib/utils";
@@ -46,10 +48,12 @@ export function FormAjustes({ inicial }: { inicial: Valores }) {
 
   return (
     <form onSubmit={guardar} className="flex flex-col gap-5">
-      <section className="flex flex-col gap-3 rounded-xl border bg-card p-4 lg:grid lg:grid-cols-3 lg:items-start lg:gap-4">
-        <h2 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase lg:col-span-3">
-          {t.ajustes.optica}
-        </h2>
+      <section className="flex flex-col gap-3 rounded-2xl border bg-card p-4 shadow-xs md:grid md:grid-cols-2 md:items-start md:gap-4 md:p-5 lg:grid-cols-3">
+        <div className="md:col-span-2 lg:col-span-3">
+          <TituloSeccion icono={Store} tono="cielo">
+            {t.ajustes.optica}
+          </TituloSeccion>
+        </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="nombre">{t.ajustes.nombre}</Label>
           <Input
@@ -82,7 +86,7 @@ export function FormAjustes({ inicial }: { inicial: Valores }) {
                 onClick={() => cambiar("idiomaDefault", i)}
                 aria-pressed={valores.idiomaDefault === i}
                 className={cn(
-                  "h-10 rounded-lg border text-sm font-medium",
+                  "h-10 rounded-xl border text-sm font-medium transition",
                   valores.idiomaDefault === i ? "border-primary bg-primary text-primary-foreground" : "bg-background",
                 )}
               >
@@ -93,14 +97,12 @@ export function FormAjustes({ inicial }: { inicial: Valores }) {
         </div>
       </section>
 
-      <section className="flex flex-col gap-3 rounded-xl border bg-card p-4">
-        <div>
-          <h2 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
-            {t.ajustes.plantillas}
-          </h2>
-          <p className="text-xs text-muted-foreground">{t.ajustes.variables}</p>
-        </div>
-        <div className="grid gap-3 lg:grid-cols-2 lg:gap-4">
+      <section className="flex flex-col gap-3 rounded-2xl border bg-card p-4 shadow-xs md:p-5">
+        <TituloSeccion icono={MessageSquareText} tono="esmeralda">
+          {t.ajustes.plantillas}
+        </TituloSeccion>
+        <p className="-mt-1 pl-10.5 text-xs text-muted-foreground">{t.ajustes.variables}</p>
+        <div className="grid gap-3 md:grid-cols-2 md:gap-4">
           {PLANTILLAS.map((campo) => (
             <div key={campo} className="flex flex-col gap-1.5">
               <Label htmlFor={campo}>{t.ajustes[campo]}</Label>
@@ -122,7 +124,11 @@ export function FormAjustes({ inicial }: { inicial: Valores }) {
         </p>
       )}
 
-      <Button type="submit" disabled={guardando} className="h-12 text-base lg:ml-auto lg:w-72">
+      <Button
+        type="submit"
+        disabled={guardando}
+        className="bg-marca h-12 border-0 text-base shadow-lg shadow-violet-500/25 hover:brightness-110 md:ml-auto md:w-72"
+      >
         {t.app.guardar}
       </Button>
     </form>

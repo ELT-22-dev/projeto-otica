@@ -27,3 +27,15 @@ export function formatearInstante(iso: string): string {
 export function centavosATexto(centavos: number): string {
   return (centavos / 100).toFixed(2).replace(".", ",");
 }
+
+const fechaLarga = new Intl.DateTimeFormat("es", {
+  timeZone: ZONA_HORARIA,
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+});
+
+/** "lunes, 5 de octubre" */
+export function formatearFechaLarga(instante: Date): string {
+  return fechaLarga.format(instante);
+}

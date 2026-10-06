@@ -28,6 +28,12 @@ export const es = {
     entrar: "Entrar",
     entrando: "Entrando…",
     error: "Correo o contraseña incorrectos.",
+    lema: "Tus pedidos de lentes, organizados y sin papel.",
+    puntos: {
+      pedidos: "Cada pedido, del laboratorio a la entrega",
+      avisos: "Avisa al cliente por WhatsApp con un toque",
+      renovaciones: "Recuerda a quien ya necesita lentes nuevos",
+    },
   },
   status: {
     en_laboratorio: "En laboratorio",
@@ -42,6 +48,7 @@ export const es = {
   },
   pedidos: {
     titulo: "Pedidos",
+    saludo: (nombre: string) => (nombre ? `Hola, ${nombre} 👋` : "Hola 👋"),
     buscar: "Buscar por nombre, teléfono o #número",
     resultados: (n: number) => (n === 1 ? "1 resultado" : `${n} resultados`),
     vacio: {

@@ -1,6 +1,7 @@
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import type { PedidoConCliente } from "@/application";
+import { Avatar } from "@/components/visual";
 import { formatearWhatsapp } from "@/domain/cliente/telefono";
 import { formatearNumeroPedido } from "@/domain/pedido/numero-pedido";
 import { estaAtrasado, saldoPendiente } from "@/domain/pedido/Pedido";
@@ -8,7 +9,7 @@ import { t } from "@/i18n";
 import { formatearFecha, formatearInstante, formatearReales } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { AccionesPedido } from "./AccionesPedido";
-import { BORDE_STATUS, StatusBadge } from "./StatusBadge";
+import { StatusBadge } from "./StatusBadge";
 
 function FechaRelevante({ pedido, hoy }: { pedido: PedidoConCliente; hoy: string }) {
   if (pedido.status === "listo" && pedido.fechaListo) {
@@ -46,9 +47,9 @@ export function TablaPedidos({
 }) {
   const col = t.pedidos.columnas;
   return (
-    <div className="overflow-hidden rounded-xl border bg-card">
+    <div className="overflow-hidden rounded-2xl border bg-card shadow-xs">
       <table className="w-full text-sm">
-        <thead className="border-b bg-muted/50 text-left text-xs text-muted-foreground">
+        <thead className="border-b text-left text-xs text-muted-foreground">
           <tr>
             <th className="w-20 px-4 py-2.5 font-medium">{col.numero}</th>
             <th className="px-4 py-2.5 font-medium">{col.cliente}</th>
@@ -63,17 +64,22 @@ export function TablaPedidos({
           {pedidos.map((p) => {
             const saldo = saldoPendiente(p);
             return (
-              <tr key={p.id} className={cn("border-l-4 transition hover:bg-muted/40", BORDE_STATUS[p.status])}>
+              <tr key={p.id} className="transition hover:bg-violet-50/40">
                 <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
                   <Link href={`/pedidos/${p.id}`} className="hover:underline">
                     {formatearNumeroPedido(p.numero)}
                   </Link>
                 </td>
                 <td className="px-4 py-3">
-                  <Link href={`/pedidos/${p.id}`} className="font-medium hover:underline">
-                    {p.cliente.nombre}
-                  </Link>
-                  <p className="text-xs text-muted-foreground">{formatearWhatsapp(p.cliente.whatsapp)}</p>
+                  <div className="flex items-center gap-3">
+                    <Avatar nombre={p.cliente.nombre} className="size-9 text-xs" />
+                    <div className="min-w-0">
+                      <Link href={`/pedidos/${p.id}`} className="font-medium hover:underline">
+                        {p.cliente.nombre}
+                      </Link>
+                      <p className="text-xs text-muted-foreground">{formatearWhatsapp(p.cliente.whatsapp)}</p>
+                    </div>
+                  </div>
                 </td>
                 <td className="max-w-64 px-4 py-3">
                   <p className="truncate">{p.descripcionArmazon}</p>

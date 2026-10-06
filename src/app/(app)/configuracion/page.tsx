@@ -1,4 +1,6 @@
+import { Settings } from "lucide-react";
 import type { Metadata } from "next";
+import { IconoTono } from "@/components/visual";
 import { ErrorDominio } from "@/domain/shared/errores";
 import { t } from "@/i18n";
 import { casosDeUso } from "@/infra/container";
@@ -19,7 +21,10 @@ export default async function PaginaAjustes() {
 
   return (
     <div className="flex flex-col gap-4 lg:max-w-5xl lg:gap-6">
-      <h1 className="text-xl font-semibold tracking-tight lg:text-2xl">{t.ajustes.titulo}</h1>
+      <div className="flex items-center gap-3">
+        <IconoTono icono={Settings} tono="cielo" className="size-11 rounded-xl" />
+        <h1 className="text-2xl font-semibold tracking-tight lg:text-3xl">{t.ajustes.titulo}</h1>
+      </div>
       <FormAjustes
         inicial={{
           nombre: org.nombre,

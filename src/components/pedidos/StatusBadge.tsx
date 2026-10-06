@@ -2,29 +2,25 @@ import type { StatusPedido } from "@/domain/pedido/status-pedido";
 import { t } from "@/i18n";
 import { cn } from "@/lib/utils";
 
-export const COLOR_STATUS: Record<StatusPedido, string> = {
-  en_laboratorio: "bg-amber-100 text-amber-900 ring-amber-300",
-  listo: "bg-emerald-100 text-emerald-900 ring-emerald-300",
-  entregado: "bg-zinc-100 text-zinc-700 ring-zinc-300",
-  cancelado: "bg-red-50 text-red-700 ring-red-200",
-};
-
-export const BORDE_STATUS: Record<StatusPedido, string> = {
-  en_laboratorio: "border-l-amber-400",
-  listo: "border-l-emerald-500",
-  entregado: "border-l-zinc-300",
-  cancelado: "border-l-red-300",
+/** Âmbar = laboratório, verde = pronto, cinza = entregue. */
+const ESTILO: Record<StatusPedido, { fondo: string; punto: string }> = {
+  en_laboratorio: { fondo: "bg-amber-50 text-amber-800 ring-amber-200", punto: "bg-amber-500" },
+  listo: { fondo: "bg-emerald-50 text-emerald-800 ring-emerald-200", punto: "bg-emerald-500" },
+  entregado: { fondo: "bg-slate-100 text-slate-700 ring-slate-200", punto: "bg-slate-400" },
+  cancelado: { fondo: "bg-red-50 text-red-700 ring-red-200", punto: "bg-red-500" },
 };
 
 export function StatusBadge({ status, className }: { status: StatusPedido; className?: string }) {
+  const { fondo, punto } = ESTILO[status];
   return (
     <span
       className={cn(
-        "inline-flex h-6 items-center rounded-full px-2.5 text-xs font-medium ring-1 ring-inset",
-        COLOR_STATUS[status],
+        "inline-flex h-6 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium ring-1 ring-inset",
+        fondo,
         className,
       )}
     >
+      <span className={cn("size-1.5 rounded-full", punto)} />
       {t.status[status]}
     </span>
   );
