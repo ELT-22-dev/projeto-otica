@@ -12,7 +12,10 @@ export type CodigoErrorDominio =
   | "cliente_no_elegible"
   | "no_encontrado"
   | "no_autorizado"
-  | "conflicto";
+  | "conflicto"
+  | "ia_no_disponible"
+  | "imagen_invalida"
+  | "receta_no_legible";
 
 export class ErrorDominio extends Error {
   readonly codigo: CodigoErrorDominio;

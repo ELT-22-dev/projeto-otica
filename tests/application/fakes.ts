@@ -6,7 +6,7 @@ import type { Pedido } from "@/domain/pedido/Pedido";
 import type { CandidatoRenovacion } from "@/domain/renovacion/regla-renovacion";
 import type { UsuarioActual } from "@/domain/usuario/Usuario";
 import { WaMeNotificador } from "@/adapters/notificador/WaMeNotificador";
-import type { PedidoConCliente, RegistroPedido } from "@/ports";
+import type { HerramientaAsistente, LecturaReceta, PedidoConCliente, RegistroPedido } from "@/ports";
 
 export const ORG: Organizacion = {
   nombre: "Óticas Latina",
@@ -30,12 +30,19 @@ export const ADMIN: UsuarioActual = { ...ATENDENTE, id: "u-2", rol: "admin" };
 let secuencia = 0;
 const uuid = () => `00000000-0000-4000-8000-${String(++secuencia).padStart(12, "0")}`;
 
-export function crearFakes(opciones: { usuario?: UsuarioActual | null; ahora?: Date } = {}) {
+export function crearFakes(
+  opciones: { usuario?: UsuarioActual | null; ahora?: Date; lectura?: LecturaReceta; sinIA?: boolean } = {},
+) {
   const clientes = new Map<string, Cliente>();
   const pedidos = new Map<string, Pedido>();
   const notificaciones: NuevaNotificacion[] = [];
   const registros: RegistroPedido[] = [];
   const candidatos: CandidatoRenovacion[] = [];
+  const asistente: { herramientas: HerramientaAsistente[]; instrucciones: string; pregunta: string } = {
+    herramientas: [],
+    instrucciones: "",
+    pregunta: "",
+  };
   let org = structuredClone(ORG);
 
   const conCliente = (p: Pedido): PedidoConCliente => {
@@ -132,6 +139,29 @@ export function crearFakes(opciones: { usuario?: UsuarioActual | null; ahora?: D
     },
     notificador: new WaMeNotificador(),
     reloj: { ahora: () => opciones.ahora ?? new Date("2026-10-05T15:00:00.000Z") },
+    lectorReceta: opciones.sinIA
+      ? null
+      : {
+          async leer() {
+            return (
+              opciones.lectura ?? {
+                esReceta: false,
+                valores: {},
+                fechaReceta: null,
+                observaciones: null,
+                advertencias: null,
+              }
+            );
+          },
+        },
+    asistente: opciones.sinIA
+      ? null
+      : {
+          async responder(p) {
+            Object.assign(asistente, p);
+            return "respuesta";
+          },
+        },
   };
 
   return {
@@ -141,6 +171,7 @@ export function crearFakes(opciones: { usuario?: UsuarioActual | null; ahora?: D
     notificaciones,
     registros,
     candidatos,
+    asistente,
     get org() {
       return org;
     },

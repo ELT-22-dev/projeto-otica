@@ -1,7 +1,9 @@
 import { ErrorDominio } from "@/domain/shared/errores";
 import { esAdmin, type UsuarioActual } from "@/domain/usuario/Usuario";
 import type {
+  AsistentePort,
   ClienteRepository,
+  LectorRecetaPort,
   NotificacionRepository,
   NotificadorPort,
   OrganizacionRepository,
@@ -22,6 +24,9 @@ export interface Dependencias {
   sesion: SesionPort;
   notificador: NotificadorPort;
   reloj: Reloj;
+  /** null quando não há chave de IA configurada: as funções de IA ficam desligadas. */
+  lectorReceta: LectorRecetaPort | null;
+  asistente: AsistentePort | null;
 }
 
 export async function requerirUsuario(sesion: SesionPort): Promise<UsuarioActual> {

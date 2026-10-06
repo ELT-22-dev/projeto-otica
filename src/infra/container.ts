@@ -1,6 +1,8 @@
 import "server-only";
 import { connection } from "next/server";
 import { cache } from "react";
+import Anthropic from "@anthropic-ai/sdk";
+import { ClaudeAsistente, ClaudeLectorReceta } from "@/adapters/ia/ClaudeIA";
 import { WaMeNotificador } from "@/adapters/notificador/WaMeNotificador";
 import { PostgresPedidoRepository } from "@/adapters/postgres/PostgresPedidoRepository";
 import {
@@ -19,6 +21,15 @@ import { sql } from "./db";
  * Trocar o WhatsApp (wa.me → envio automático) é trocar o notificador aqui.
  * Uma instância por request (React cache), porque a sessão é do usuário daquele request.
  */
+/** Sem ANTHROPIC_API_KEY o sistema funciona normalmente, só sem as funções de IA. */
+let claude: Anthropic | null | undefined;
+function clienteClaude(): Anthropic | null {
+  if (claude === undefined) {
+    claude = process.env.ANTHROPIC_API_KEY ? new Anthropic({ timeout: 90_000, maxRetries: 1 }) : null;
+  }
+  return claude;
+}
+
 export const casosDeUso = cache(async (): Promise<CasosDeUso> => {
   // Dados de sessão e do banco: nunca pré-renderizar no build.
   await connection();
@@ -33,5 +44,7 @@ export const casosDeUso = cache(async (): Promise<CasosDeUso> => {
     sesion: new SesionCookie(),
     notificador: new WaMeNotificador(),
     reloj: { ahora: () => new Date() },
+    lectorReceta: clienteClaude() ? new ClaudeLectorReceta(clienteClaude()!) : null,
+    asistente: clienteClaude() ? new ClaudeAsistente(clienteClaude()!) : null,
   });
 });

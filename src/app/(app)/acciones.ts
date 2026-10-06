@@ -71,3 +71,26 @@ export async function cerrarSesionAccion() {
   await cerrarSesion();
   redirect("/login");
 }
+
+export interface RecetaLeida {
+  odEsfera: number | null;
+  odCilindro: number | null;
+  odEje: number | null;
+  oiEsfera: number | null;
+  oiCilindro: number | null;
+  oiEje: number | null;
+  adicion: number | null;
+  dnpOd: number | null;
+  dnpOi: number | null;
+  fechaReceta: string | null;
+  observaciones: string | null;
+  advertencias: string | null;
+}
+
+export async function leerRecetaAccion(imagen: unknown): Promise<ResultadoAccion<RecetaLeida>> {
+  return ejecutar(async () => (await casosDeUso()).leerRecetaDeFoto(imagen));
+}
+
+export async function preguntarAsistenteAccion(entrada: unknown): Promise<ResultadoAccion<string>> {
+  return ejecutar(async () => (await casosDeUso()).preguntarAsistente(entrada));
+}

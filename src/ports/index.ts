@@ -100,3 +100,50 @@ export interface NotificadorPort {
 export interface Reloj {
   ahora(): Date;
 }
+
+// IA ------------------------------------------------------------------------
+
+export type TipoImagen = "image/jpeg" | "image/png" | "image/webp";
+
+export interface ImagenReceta {
+  tipo: TipoImagen;
+  base64: string;
+}
+
+/** O que a IA conseguiu ler da foto. Valores podem estar fora de faixa: o domínio limpa. */
+export interface LecturaReceta {
+  esReceta: boolean;
+  valores: Partial<Record<CampoNumericoReceta, number | null>>;
+  fechaReceta: string | null;
+  observaciones: string | null;
+  advertencias: string | null;
+}
+
+export type CampoNumericoReceta =
+  "odEsfera" | "odCilindro" | "odEje" | "oiEsfera" | "oiCilindro" | "oiEje" | "adicion" | "dnpOd" | "dnpOi";
+
+export interface LectorRecetaPort {
+  leer(imagen: ImagenReceta): Promise<LecturaReceta>;
+}
+
+/** Ferramenta de consulta que o assistente pode usar. A entrada chega sem validar: `ejecutar` valida. */
+export interface HerramientaAsistente {
+  nombre: string;
+  descripcion: string;
+  esquemaEntrada: { type: "object"; [clave: string]: unknown };
+  ejecutar(entrada: unknown): Promise<unknown>;
+}
+
+export interface MensajeAsistente {
+  rol: "usuario" | "asistente";
+  texto: string;
+}
+
+export interface AsistentePort {
+  responder(pedido: {
+    instrucciones: string;
+    historial: MensajeAsistente[];
+    pregunta: string;
+    herramientas: HerramientaAsistente[];
+  }): Promise<string>;
+}

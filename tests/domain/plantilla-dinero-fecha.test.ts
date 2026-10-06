@@ -116,3 +116,29 @@ describe("receta", () => {
     expect(() => validarReceta({ ...vacia, oiEje: 90.5 })).toThrow("receta_invalida");
   });
 });
+
+describe("limpiarLecturaReceta", () => {
+  it("mantém valores válidos, arredonda e descarta o que está fora de faixa", async () => {
+    const { limpiarLecturaReceta } = await import("@/domain/receta/Receta");
+    expect(
+      limpiarLecturaReceta({
+        odEsfera: -2.25,
+        odEje: 179.6,
+        oiEje: 250,
+        adicion: 9,
+        dnpOd: 31.54,
+        oiCilindro: Number.NaN,
+      }),
+    ).toEqual({
+      odEsfera: -2.25,
+      odCilindro: null,
+      odEje: 180,
+      oiEsfera: null,
+      oiCilindro: null,
+      oiEje: null,
+      adicion: null,
+      dnpOd: 31.5,
+      dnpOi: null,
+    });
+  });
+});

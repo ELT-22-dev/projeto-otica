@@ -37,6 +37,8 @@ function casos(u: UsuarioActual | null = usuario) {
     sesion: { usuarioActual: async () => u },
     notificador: new WaMeNotificador(),
     reloj: { ahora: () => AHORA },
+    lectorReceta: null,
+    asistente: null,
   });
 }
 
@@ -168,5 +170,41 @@ describe("configuração", () => {
 
   it("atendente não acessa configuração", async () => {
     await expect(casos().obtenerConfiguracion()).rejects.toThrow("no_autorizado");
+  });
+});
+
+describe("ferramentas do assistente com dados reais", () => {
+  async function ejecutar(nombre: string, entrada: unknown = {}) {
+    const { herramientasAsistente } = await import("@/application/ia/asistente");
+    const sql = sqlDe(db);
+    const h = herramientasAsistente({
+      pedidos: new PostgresPedidoRepository(sql),
+      renovaciones: new PostgresRenovacionRepository(sql),
+      reloj: { ahora: () => AHORA },
+    }).find((x) => x.nombre === nombre)!;
+    return h.ejecutar(entrada) as Promise<Record<string, unknown> & unknown[]>;
+  }
+
+  it("resumen: atrasados e saldo a cobrar dos pedidos abertos", async () => {
+    const r = await ejecutar("resumen_pedidos");
+    expect(r).toMatchObject({
+      pedidos_por_estado: { en_laboratorio: 2, listo: 2, entregado: 6, cancelado: 0 },
+      listos_esperando_retiro: 2,
+      saldo_pendiente_total_reales: 1560, // 560 + 300 + 480 + 220
+    });
+    expect((r.atrasados as { cliente: string }[]).map((p) => p.cliente)).toEqual(["Diego Flores"]);
+  });
+
+  it("renovações e busca", async () => {
+    const renov = (await ejecutar("listar_renovaciones")) as unknown as { cliente: string }[];
+    expect(renov.map((c) => c.cliente)).toEqual(["Carlos Mamani", "Rosa Gutiérrez"]);
+    const busca = (await ejecutar("buscar_pedidos", { texto: "lucia" })) as unknown as Record<string, unknown>[];
+    expect(busca).toHaveLength(1);
+  });
+
+  it("nenhuma ferramenta expõe dados de receita", async () => {
+    const lucia = (await ejecutar("buscar_pedidos", { texto: "lucia" })) as unknown as Record<string, unknown>[];
+    const campos = Object.keys(lucia[0]!).join(",");
+    expect(campos).not.toMatch(/esfera|cilindro|eje|adicion|dnp|receta/i);
   });
 });

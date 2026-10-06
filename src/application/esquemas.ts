@@ -80,3 +80,21 @@ export const esquemaConfiguracion = z.object({
   plantillaRenovacionPt: plantilla,
 });
 export type EntradaConfiguracion = z.input<typeof esquemaConfiguracion>;
+
+/** ~1 MB de base64: a foto é reduzida no navegador antes do envio. */
+export const esquemaImagenReceta = z.object({
+  tipo: z.enum(["image/jpeg", "image/png", "image/webp"]),
+  base64: z
+    .string()
+    .min(100)
+    .max(1_400_000)
+    .regex(/^[A-Za-z0-9+/]+={0,2}$/),
+});
+
+export const esquemaPreguntaAsistente = z.object({
+  pregunta: z.string().trim().min(1).max(500),
+  historial: z
+    .array(z.object({ rol: z.enum(["usuario", "asistente"]), texto: z.string().max(4000) }))
+    .max(12)
+    .default([]),
+});

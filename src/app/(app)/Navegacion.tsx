@@ -1,6 +1,6 @@
 "use client";
 
-import { ClipboardList, LogOut, Plus, RefreshCcw, Settings } from "lucide-react";
+import { ClipboardList, LogOut, Plus, RefreshCcw, Settings, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -31,6 +31,14 @@ const ITEMS = [
     Icono: RefreshCcw,
     activo: "bg-pink-100 text-pink-700",
     icono: "text-pink-600",
+    soloAdmin: false,
+  },
+  {
+    href: "/asistente",
+    etiqueta: t.nav.asistente,
+    Icono: Sparkles,
+    activo: "bg-fuchsia-100 text-fuchsia-700",
+    icono: "text-fuchsia-600",
     soloAdmin: false,
   },
   {

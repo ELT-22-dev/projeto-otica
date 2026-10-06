@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, Eye, Glasses, UserCheck, UserRound, X } from "lucide-react";
+import { Camera, ChevronDown, Eye, Glasses, Loader2, Sparkles, UserCheck, UserRound, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -15,8 +15,15 @@ import { formatearNumeroPedido } from "@/domain/pedido/numero-pedido";
 import { sumarDias } from "@/domain/shared/fecha";
 import type { Idioma } from "@/domain/shared/idioma";
 import { t } from "@/i18n";
+import { reducirImagen } from "@/lib/imagen";
 import { cn } from "@/lib/utils";
-import { buscarClientesAccion, crearPedidoAccion, type SugerenciaCliente } from "../../acciones";
+import {
+  buscarClientesAccion,
+  crearPedidoAccion,
+  leerRecetaAccion,
+  type RecetaLeida,
+  type SugerenciaCliente,
+} from "../../acciones";
 
 const CAMPOS_RECETA = ["Esfera", "Cilindro", "Eje"] as const;
 const RECETA_VACIA = {
@@ -34,7 +41,22 @@ const RECETA_VACIA = {
 };
 type CampoReceta = keyof typeof RECETA_VACIA;
 
-export function FormNuevoPedido({ hoy, idiomaDefault }: { hoy: string; idiomaDefault: Idioma }) {
+/** Valor lido pela IA no formato do campo: "-2,25", "+1,50", "180", "31,5". */
+function aCampo(v: number | null, decimales: number, conSigno = false): string {
+  if (v === null) return "";
+  const texto = v.toFixed(decimales).replace(".", ",");
+  return conSigno && v > 0 ? `+${texto}` : texto;
+}
+
+export function FormNuevoPedido({
+  hoy,
+  idiomaDefault,
+  iaDisponible,
+}: {
+  hoy: string;
+  idiomaDefault: Idioma;
+  iaDisponible: boolean;
+}) {
   const router = useRouter();
   const [guardando, iniciar] = useTransition();
 
@@ -51,6 +73,9 @@ export function FormNuevoPedido({ hoy, idiomaDefault }: { hoy: string; idiomaDef
   const [fechaEntrega, setFechaEntrega] = useState(sumarDias(hoy, 7));
   const [receta, setReceta] = useState(RECETA_VACIA);
   const [recetaAbierta, setRecetaAbierta] = useState(false);
+  const [leyendo, iniciarLectura] = useTransition();
+  const [advertenciaReceta, setAdvertenciaReceta] = useState<string | null>(null);
+  const inputFoto = useRef<HTMLInputElement>(null);
 
   const [error, setError] = useState<{ mensaje: string; campo?: string } | null>(null);
   const ultimaBusqueda = useRef(0);
@@ -80,6 +105,39 @@ export function FormNuevoPedido({ hoy, idiomaDefault }: { hoy: string; idiomaDef
     setElegido(null);
     setNombre("");
     setWhatsapp("");
+  }
+
+  function leerFoto(archivo: File) {
+    iniciarLectura(async () => {
+      let r;
+      try {
+        r = await leerRecetaAccion(await reducirImagen(archivo));
+      } catch {
+        toast.error(t.errores.imagen_invalida);
+        return;
+      }
+      if (!r.ok) {
+        toast.error(r.error);
+        return;
+      }
+      const l: RecetaLeida = r.data;
+      setReceta({
+        odEsfera: aCampo(l.odEsfera, 2, true),
+        odCilindro: aCampo(l.odCilindro, 2, true),
+        odEje: aCampo(l.odEje, 0),
+        oiEsfera: aCampo(l.oiEsfera, 2, true),
+        oiCilindro: aCampo(l.oiCilindro, 2, true),
+        oiEje: aCampo(l.oiEje, 0),
+        adicion: aCampo(l.adicion, 2, true),
+        dnpOd: aCampo(l.dnpOd, 1),
+        dnpOi: aCampo(l.dnpOi, 1),
+        fechaReceta: l.fechaReceta && l.fechaReceta <= hoy ? l.fechaReceta : "",
+        observaciones: l.observaciones ?? "",
+      });
+      setAdvertenciaReceta(l.advertencias);
+      setRecetaAbierta(true);
+      toast.success(t.nuevo.leida);
+    });
   }
 
   function campoReceta(campo: CampoReceta, valor: string) {
@@ -304,12 +362,48 @@ export function FormNuevoPedido({ hoy, idiomaDefault }: { hoy: string; idiomaDef
         onOpenChange={setRecetaAbierta}
         className="rounded-2xl border bg-card shadow-xs md:col-span-2"
       >
-        <CollapsibleTrigger className="flex w-full items-center gap-2.5 p-4 text-left md:p-5">
-          <IconoTono icono={Eye} tono="rosa" />
-          <span className="flex-1 text-sm font-semibold">{t.nuevo.receta}</span>
-          <ChevronDown className={cn("size-5 text-muted-foreground transition", recetaAbierta && "rotate-180")} />
-        </CollapsibleTrigger>
+        <div className="flex flex-wrap items-center gap-2 p-4 md:p-5">
+          <CollapsibleTrigger className="flex min-w-0 flex-1 items-center gap-2.5 text-left">
+            <IconoTono icono={Eye} tono="rosa" />
+            <span className="flex-1 text-sm font-semibold">{t.nuevo.receta}</span>
+            <ChevronDown className={cn("size-5 text-muted-foreground transition", recetaAbierta && "rotate-180")} />
+          </CollapsibleTrigger>
+          {iaDisponible && (
+            <>
+              <input
+                ref={inputFoto}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(e) => {
+                  const archivo = e.target.files?.[0];
+                  e.target.value = "";
+                  if (archivo) leerFoto(archivo);
+                }}
+              />
+              <Button
+                type="button"
+                disabled={leyendo}
+                onClick={() => inputFoto.current?.click()}
+                className="h-10 w-full rounded-xl border-0 bg-linear-to-r from-pink-500 to-fuchsia-500 text-white shadow-md shadow-pink-500/20 hover:brightness-110 sm:w-auto"
+              >
+                {leyendo ? (
+                  <Loader2 className="animate-spin" data-icon="inline-start" />
+                ) : (
+                  <Camera data-icon="inline-start" />
+                )}
+                {leyendo ? t.nuevo.leyendo : t.nuevo.leerFoto}
+                <Sparkles className="size-3.5 opacity-80" />
+              </Button>
+            </>
+          )}
+        </div>
         <CollapsibleContent className="grid gap-4 px-4 pb-4 md:px-5 md:pb-5 lg:grid-cols-2 lg:gap-x-8">
+          {iaDisponible && <p className="text-xs text-muted-foreground lg:col-span-2">{t.nuevo.avisoFoto}</p>}
+          {advertenciaReceta && (
+            <p className="rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-800 lg:col-span-2">{advertenciaReceta}</p>
+          )}
           <div className="grid grid-cols-[auto_1fr_1fr_1fr] items-center gap-2 text-sm">
             <span />
             <span className="text-center text-xs text-muted-foreground">{t.receta.esfera}</span>

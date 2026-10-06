@@ -1,6 +1,8 @@
 import { avisarRenovacion, generarAvisoCliente, listoYAvisar } from "./avisos/avisos";
 import { buscarClientes, obtenerFichaCliente } from "./clientes/clientes";
 import type { Dependencias } from "./dependencias";
+import { preguntarAsistente } from "./ia/asistente";
+import { leerRecetaDeFoto } from "./ia/leerReceta";
 import { actualizarConfiguracion, obtenerConfiguracion, obtenerContexto } from "./organizacion/organizacion";
 import { cambiarStatusPedido, marcarComoEntregado, marcarComoListo } from "./pedidos/cambiarStatus";
 import { contarPedidosPorStatus, listarPedidos, obtenerPedido } from "./pedidos/consultas";
@@ -25,6 +27,9 @@ export function crearCasosDeUso(deps: Dependencias) {
     obtenerContexto: obtenerContexto(deps),
     obtenerConfiguracion: obtenerConfiguracion(deps),
     actualizarConfiguracion: actualizarConfiguracion(deps),
+    leerRecetaDeFoto: leerRecetaDeFoto(deps),
+    preguntarAsistente: preguntarAsistente(deps),
+    iaDisponible: deps.lectorReceta !== null && deps.asistente !== null,
   };
 }
 
@@ -32,4 +37,4 @@ export type CasosDeUso = ReturnType<typeof crearCasosDeUso>;
 export type { Dependencias } from "./dependencias";
 export type { ClienteParaRenovar } from "./renovaciones/listarRenovaciones";
 export type { EntradaConfiguracion, EntradaCrearPedido } from "./esquemas";
-export type { ResultadoEnvio, PedidoConCliente } from "@/ports";
+export type { MensajeAsistente, PedidoConCliente, ResultadoEnvio } from "@/ports";
