@@ -6,27 +6,28 @@ import { env } from "./env";
 
 let instancia: Sql | null = null;
 
-function esLocal(url: string): boolean {
-  const host = new URL(url).hostname;
-  return host === "localhost" || host === "127.0.0.1";
+/** Neon: driver HTTP (sem conexão persistente), bom para funções serverless como as da Vercel. */
+function esNeon(url: string): boolean {
+  return new URL(url).hostname.endsWith(".neon.tech");
 }
 
 /**
- * Produção: driver HTTP do Neon (sem conexão persistente, adequado para funções serverless).
- * Desenvolvimento com Postgres local (npm run db:local): driver pg comum.
+ * Neon → driver HTTP do Neon.
+ * Qualquer outro Postgres (Railway, local com npm run db:local) → driver pg com pool:
+ * no Railway o app é um servidor sempre ligado, então manter conexões abertas é o mais rápido.
  */
 export function sql(): Sql {
   if (!instancia) {
     const url = env().DATABASE_URL;
-    if (esLocal(url)) {
-      const pool = new pg.Pool({ connectionString: url, max: 5 });
-      instancia = {
-        query: async <T>(texto: string, params: unknown[] = []) => (await pool.query(texto, params)).rows as T[],
-      };
-    } else {
+    if (esNeon(url)) {
       const consulta = neon(url);
       instancia = {
         query: async <T>(texto: string, params: unknown[] = []) => (await consulta.query(texto, params)) as T[],
+      };
+    } else {
+      const pool = new pg.Pool({ connectionString: url, max: 10, idleTimeoutMillis: 30_000 });
+      instancia = {
+        query: async <T>(texto: string, params: unknown[] = []) => (await pool.query(texto, params)).rows as T[],
       };
     }
   }
