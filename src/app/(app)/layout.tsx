@@ -7,7 +7,8 @@ import { cerrarSesionAccion } from "./acciones";
 import { BarraLateral, NavInferior } from "./Navegacion";
 
 export default async function LayoutApp({ children }: { children: React.ReactNode }) {
-  const contexto = await (await casosDeUso()).obtenerContexto();
+  const casos = await casosDeUso();
+  const contexto = await casos.obtenerContexto();
 
   // Cookie válido, mas o usuário foi desativado ou removido.
   if (!contexto) {
@@ -24,10 +25,18 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
   }
 
   const esAdmin = contexto.usuario.rol === "admin";
+  const porAvisar = await casos.obtenerPorAvisar();
+  // Número vermelho no menu: quantos clientes esperam aviso em cada seção.
+  const avisos = { "/pedidos": porAvisar.listos.length, "/renovaciones": porAvisar.renovaciones.length };
 
   return (
     <div className="min-h-dvh">
-      <BarraLateral esAdmin={esAdmin} optica={contexto.organizacion.nombre} usuario={contexto.usuario.nombre} />
+      <BarraLateral
+        esAdmin={esAdmin}
+        optica={contexto.organizacion.nombre}
+        usuario={contexto.usuario.nombre}
+        avisos={avisos}
+      />
 
       <div className="flex min-h-dvh flex-col md:pl-20 lg:pl-64">
         <header className="sticky top-0 z-20 flex items-center justify-between border-b bg-background/90 px-4 py-3 backdrop-blur md:hidden">
@@ -50,7 +59,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
         </main>
       </div>
 
-      <NavInferior esAdmin={esAdmin} />
+      <NavInferior esAdmin={esAdmin} avisos={avisos} />
     </div>
   );
 }

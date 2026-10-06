@@ -276,3 +276,28 @@ describe("módulos de gestão com dados reais", () => {
     await expect(a.actualizarUsuario({ id: eddy.id, rol: "atendente" })).rejects.toThrow("operacion_no_permitida");
   });
 });
+
+describe("sinal de 'para avisar'", () => {
+  it("junta óculos prontos sem aviso e renovações pendentes; cada aviso tira o item da lista", async () => {
+    const c = casos();
+    const antes = await c.obtenerPorAvisar();
+    expect(antes.listos.map((p) => p.cliente.nombre).sort()).toEqual(["Miguel Choque", "Patrícia Rocha"]);
+    expect(antes.renovaciones.map((r) => r.nombre)).toEqual(["Carlos Mamani", "Rosa Gutiérrez"]);
+    expect(antes.total).toBe(4);
+
+    await c.listoYAvisar(antes.listos.find((p) => p.cliente.nombre === "Miguel Choque")!.id);
+    await c.avisarRenovacion(antes.renovaciones[0]!.clienteId);
+
+    const depois = await c.obtenerPorAvisar();
+    expect(depois.listos.map((p) => p.cliente.nombre)).toEqual(["Patrícia Rocha"]);
+    expect(depois.renovaciones.map((r) => r.nombre)).toEqual(["Rosa Gutiérrez"]);
+    expect(depois.total).toBe(2);
+  });
+
+  it("pedido marcado como pronto entra na lista até ser avisado", async () => {
+    const c = casos();
+    const [diego] = await c.listarPedidos({ busqueda: "diego" });
+    await c.marcarComoListo(diego!.id);
+    expect((await c.obtenerPorAvisar()).listos.map((p) => p.cliente.nombre)).toContain("Diego Flores");
+  });
+});

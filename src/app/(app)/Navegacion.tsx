@@ -34,6 +34,24 @@ interface Props {
   esAdmin: boolean;
   optica: string;
   usuario: string;
+  /** Clientes esperando aviso, por seção (ex.: "/pedidos": 2). */
+  avisos?: Record<string, number>;
+}
+
+/** Sinal vermelho com quantos clientes esperam aviso. */
+function Contador({ n, className }: { n?: number; className?: string }) {
+  if (!n) return null;
+  return (
+    <span
+      aria-label={t.porAvisar.resumen(n)}
+      className={cn(
+        "flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] leading-none font-bold text-white ring-2 ring-card",
+        className,
+      )}
+    >
+      {n}
+    </span>
+  );
 }
 
 interface Item {
@@ -215,7 +233,7 @@ function EtiquetaPronto({ className }: { className?: string }) {
  * Tablet (md): trilho estreito com ícones e rótulos curtos.
  * Desktop (lg): barra completa com nome da ótica e usuário.
  */
-export function BarraLateral({ esAdmin, optica, usuario }: Props) {
+export function BarraLateral({ esAdmin, optica, usuario, avisos = {} }: Props) {
   const { ruta, activo, items } = useNavegacion(esAdmin);
 
   return (
@@ -259,8 +277,12 @@ export function BarraLateral({ esAdmin, optica, usuario }: Props) {
                 : "text-muted-foreground hover:bg-muted hover:text-foreground",
             )}
           >
-            <Icono className={cn("size-5 shrink-0 lg:size-4", !activo(href) && icono)} />
+            <span className="relative">
+              <Icono className={cn("size-5 shrink-0 lg:size-4", !activo(href) && icono)} />
+              <Contador n={avisos[href]} className="absolute -top-2 -right-3 lg:hidden" />
+            </span>
             <span className="lg:flex-1 lg:truncate">{etiqueta}</span>
+            <Contador n={avisos[href]} className="hidden lg:flex" />
             {pronto && <EtiquetaPronto className="hidden lg:inline" />}
           </Link>
         ))}
@@ -295,7 +317,7 @@ const EN_BARRA_CELULAR = ["/inicio", "/pedidos", "/clientes"];
  * Celular (< md). Com até 4 módulos: todos na barra, com Nuevo no centro.
  * Com mais: 3 atalhos + Nuevo + "Más" com todos os módulos.
  */
-export function NavInferior({ esAdmin }: Pick<Props, "esAdmin">) {
+export function NavInferior({ esAdmin, avisos = {} }: Pick<Props, "esAdmin" | "avisos">) {
   const { ruta, activo, items } = useNavegacion(esAdmin);
   const [abierto, setAbierto] = useState(false);
   const fijos = EN_BARRA_CELULAR.map((h) => items.find((i) => i.href === h)).filter((i): i is Item => Boolean(i));
@@ -323,7 +345,10 @@ export function NavInferior({ esAdmin }: Pick<Props, "esAdmin">) {
         activo(item.href) && "font-semibold text-foreground",
       )}
     >
-      <item.Icono className={cn("size-5", activo(item.href) && item.icono)} />
+      <span className="relative">
+        <item.Icono className={cn("size-5", activo(item.href) && item.icono)} />
+        <Contador n={avisos[item.href]} className="absolute -top-2 -right-3" />
+      </span>
       {item.etiqueta}
     </Link>
   );

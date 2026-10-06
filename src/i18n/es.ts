@@ -198,6 +198,15 @@ export const es = {
       "¿A quién conviene avisar para renovar?",
     ],
   },
+  porAvisar: {
+    titulo: "Para avisar",
+    resumen: (n: number) => (n === 1 ? "1 cliente espera tu aviso" : `${n} clientes esperan tu aviso`),
+    ayuda: "Un toque abre WhatsApp con el mensaje listo. Al enviarlo, sale de esta lista.",
+    listo: "Lentes listos",
+    renovacion: "Renovación",
+    avisar: "Avisar",
+    hace: (meses: number) => `Último par hace ${meses} meses`,
+  },
   inicio: {
     porCobrar: "Por cobrar",
     porCobrarDetalle: "Saldo de pedidos abiertos",

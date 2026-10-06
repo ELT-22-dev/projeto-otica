@@ -1,6 +1,7 @@
 import { CheckCircle2, FlaskConical, PackageCheck, Search, X, type LucideIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PanelPorAvisar } from "@/components/avisos/PanelPorAvisar";
 import { TablaPedidos } from "@/components/pedidos/TablaPedidos";
 import { TarjetaPedido } from "@/components/pedidos/TarjetaPedido";
 import { Input } from "@/components/ui/input";
@@ -53,10 +54,11 @@ export default async function PaginaPedidos({
   const busqueda = texto(params.q).slice(0, 60);
 
   const casos = await casosDeUso();
-  const [pedidos, conteos, contexto] = await Promise.all([
+  const [pedidos, conteos, contexto, porAvisar] = await Promise.all([
     casos.listarPedidos({ status: estado, busqueda: busqueda || undefined }),
     casos.contarPedidosPorStatus(),
     casos.obtenerContexto(),
+    casos.obtenerPorAvisar(),
   ]);
   const ahora = new Date();
   const hoy = fechaLocal(ahora);
@@ -93,6 +95,8 @@ export default async function PaginaPedidos({
           )}
         </form>
       </div>
+
+      {!busqueda && <PanelPorAvisar datos={porAvisar} hoy={hoy} />}
 
       {busqueda ? (
         <p className="text-sm text-muted-foreground">{t.pedidos.resultados(pedidos.length)}</p>
