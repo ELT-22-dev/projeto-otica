@@ -129,7 +129,7 @@ describe("escolha do provedor pelas variáveis de ambiente", () => {
     const nvidia = crearIA(configIADesdeEnv({ IA_ACTIVA: "1", IA_PROVEEDOR: "NVIDIA", NVIDIA_API_KEY: "n" })!);
     expect(nvidia).toMatchObject({
       proveedor: "nvidia",
-      modelo: "moonshotai/kimi-k2.6, deepseek-ai/deepseek-v4.1-flash, openai/gpt-oss-20b",
+      modelo: expect.stringMatching(/^nvidia\/nemotron/),
       lectorReceta: null,
     });
     const openai = crearIA(

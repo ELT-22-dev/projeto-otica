@@ -428,6 +428,7 @@ async function atender(req: IncomingMessage, res: ServerResponse) {
     case "POST /probar-ia": {
       // Diagnóstico: uma pergunta simples + uma ferramenta, sem tocar em WhatsApp nem no banco.
       if (!ia) return responder(res, 200, { ok: false, error: "IA desactivada (IA_ACTIVA / clave)" });
+      const inicio = Date.now();
       try {
         let usoHerramienta = false;
         const texto = await ia.asistente.responder({
@@ -446,8 +447,10 @@ async function atender(req: IncomingMessage, res: ServerResponse) {
             },
           ],
         });
-        return responder(res, 200, { ok: true, modelo: ia.modelo, usoHerramienta, texto });
+        log(`probar-ia ok en ${Date.now() - inicio} ms; herramienta: ${usoHerramienta}; respuesta: ${texto}`);
+        return responder(res, 200, { ok: true, ms: Date.now() - inicio, usoHerramienta, texto });
       } catch (e) {
+        log(`probar-ia falló en ${Date.now() - inicio} ms`, e);
         return responder(res, 200, { ok: false, error: e instanceof Error ? e.message : String(e) });
       }
     }

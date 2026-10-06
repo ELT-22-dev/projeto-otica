@@ -29,10 +29,15 @@ async function llamar<T>(fn: () => Promise<T>): Promise<T> {
 
 const MAX_ITERACIONES = 8;
 
-/** O modelo não existe (mais) ou não aceita ferramentas: vale tentar o próximo da lista. */
+/**
+ * Vale tentar o próximo modelo da lista: não existe (mais) para a conta, não aceita ferramentas,
+ * demorou demais (no WhatsApp a resposta tem que vir em segundos) ou o servidor dele falhou.
+ * Chave inválida (401/403) ou limite (429) não: o próximo modelo falharia igual.
+ */
 function modeloNoSirve(e: unknown): boolean {
+  if (e instanceof OpenAI.APIConnectionTimeoutError) return true;
   if (!(e instanceof OpenAI.APIError)) return false;
-  if (e.status === 404) return true;
+  if (e.status === 404 || (e.status !== undefined && e.status >= 500)) return true;
   return (e.status === 400 || e.status === 422) && /model|tool|function/i.test(e.message);
 }
 

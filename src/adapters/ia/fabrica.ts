@@ -18,7 +18,7 @@ const MODELO_POR_DEFECTO: Record<ProveedorIA, string> = {
   claude: MODELO_CLAUDE,
   openai: "gpt-5.5",
   // O catálogo da NVIDIA muda com frequência: vários em ordem, o serviço usa o primeiro que responder.
-  nvidia: "moonshotai/kimi-k2.6,deepseek-ai/deepseek-v4.1-flash,openai/gpt-oss-20b",
+  nvidia: "nvidia/nemotron-3-super-120b-a12b,openai/gpt-oss-20b,deepseek-ai/deepseek-v4.1-flash,z-ai/glm-5.3-flash",
 };
 
 const BASE_URL_NVIDIA = "https://integrate.api.nvidia.com/v1";
@@ -58,7 +58,8 @@ export function crearIA(config: ConfigIA): IA {
       };
     }
     case "nvidia": {
-      const client = new OpenAI({ apiKey: config.clave, baseURL: BASE_URL_NVIDIA, timeout: 90_000, maxRetries: 1 });
+      // 30 s por modelo, sem repetir: se um estiver lento, passa para o próximo da lista.
+      const client = new OpenAI({ apiKey: config.clave, baseURL: BASE_URL_NVIDIA, timeout: 30_000, maxRetries: 0 });
       return {
         proveedor: "nvidia",
         modelo: modelos.join(", "),
