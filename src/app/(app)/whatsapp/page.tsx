@@ -7,10 +7,12 @@ import { formatearNumeroPedido } from "@/domain/pedido/numero-pedido";
 import { t } from "@/i18n";
 import { casosDeUso } from "@/infra/container";
 import { formatearInstante } from "@/lib/format";
+import { exigirModulo } from "@/app/_lib/exigir-modulo";
 
 export const metadata: Metadata = { title: t.crm.titulo };
 
 export default async function PaginaCrm() {
+  exigirModulo("whatsapp");
   const crm = await (await casosDeUso()).obtenerCrm();
 
   return (

@@ -6,10 +6,12 @@ import { t } from "@/i18n";
 import { casosDeUso } from "@/infra/container";
 import { formatearReales } from "@/lib/format";
 import { soloAdmin } from "../../_lib/solo-admin";
+import { exigirModulo } from "@/app/_lib/exigir-modulo";
 
 export const metadata: Metadata = { title: t.finanzas.titulo };
 
 export default async function PaginaFinanzas() {
+  exigirModulo("finanzas");
   const f = await soloAdmin((await casosDeUso()).obtenerFinanzas());
   if (!f) return <p className="py-12 text-center text-sm text-muted-foreground">{t.ajustes.soloAdmin}</p>;
 

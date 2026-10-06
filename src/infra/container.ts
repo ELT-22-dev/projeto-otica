@@ -24,11 +24,15 @@ import { hashSenha } from "./password";
  * Trocar o WhatsApp (wa.me → envio automático) é trocar o notificador aqui.
  * Uma instância por request (React cache), porque a sessão é do usuário daquele request.
  */
-/** Sem ANTHROPIC_API_KEY o sistema funciona normalmente, só sem as funções de IA. */
+/**
+ * IA só com IA_ACTIVA=1 e ANTHROPIC_API_KEY. Sem isso o sistema funciona normalmente,
+ * apenas sem leitura de receita por foto e sem assistente.
+ */
 let claude: Anthropic | null | undefined;
 function clienteClaude(): Anthropic | null {
   if (claude === undefined) {
-    claude = process.env.ANTHROPIC_API_KEY ? new Anthropic({ timeout: 90_000, maxRetries: 1 }) : null;
+    const activa = process.env.IA_ACTIVA === "1" && Boolean(process.env.ANTHROPIC_API_KEY);
+    claude = activa ? new Anthropic({ timeout: 90_000, maxRetries: 1 }) : null;
   }
   return claude;
 }

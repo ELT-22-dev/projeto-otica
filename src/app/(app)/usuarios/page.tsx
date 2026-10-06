@@ -5,10 +5,12 @@ import { t } from "@/i18n";
 import { casosDeUso } from "@/infra/container";
 import { soloAdmin } from "../../_lib/solo-admin";
 import { GestionUsuarios } from "./GestionUsuarios";
+import { exigirModulo } from "@/app/_lib/exigir-modulo";
 
 export const metadata: Metadata = { title: t.usuarios.titulo };
 
 export default async function PaginaUsuarios() {
+  exigirModulo("usuarios");
   const casos = await casosDeUso();
   const [usuarios, contexto] = await Promise.all([soloAdmin(casos.listarUsuarios()), casos.obtenerContexto()]);
   if (!usuarios) return <p className="py-12 text-center text-sm text-muted-foreground">{t.ajustes.soloAdmin}</p>;

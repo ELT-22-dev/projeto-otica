@@ -6,6 +6,7 @@ import { t } from "@/i18n";
 import { casosDeUso } from "@/infra/container";
 import { formatearReales } from "@/lib/format";
 import { soloAdmin } from "../../_lib/solo-admin";
+import { exigirModulo } from "@/app/_lib/exigir-modulo";
 
 export const metadata: Metadata = { title: t.reportes.titulo };
 
@@ -16,6 +17,7 @@ function etiquetaMes(mes: string): string {
 }
 
 export default async function PaginaReportes() {
+  exigirModulo("reportes");
   const r = await soloAdmin((await casosDeUso()).obtenerReportes());
   if (!r) return <p className="py-12 text-center text-sm text-muted-foreground">{t.ajustes.soloAdmin}</p>;
 

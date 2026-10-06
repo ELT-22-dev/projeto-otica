@@ -16,10 +16,12 @@ import { primerNombre } from "@/domain/cliente/Cliente";
 import { t } from "@/i18n";
 import { casosDeUso } from "@/infra/container";
 import { formatearFechaLarga, formatearReales } from "@/lib/format";
+import { exigirModulo } from "@/app/_lib/exigir-modulo";
 
 export const metadata: Metadata = { title: t.nav.inicio };
 
 export default async function PaginaInicio() {
+  exigirModulo("inicio");
   const casos = await casosDeUso();
   const [panel, contexto] = await Promise.all([casos.obtenerPanel(), casos.obtenerContexto()]);
 

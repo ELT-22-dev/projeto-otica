@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { t } from "@/i18n";
 import { casosDeUso } from "@/infra/container";
 import { ChatAsistente } from "./ChatAsistente";
+import { exigirModulo } from "@/app/_lib/exigir-modulo";
 
 export const metadata: Metadata = { title: t.asistente.titulo };
 
@@ -10,6 +11,7 @@ export const metadata: Metadata = { title: t.asistente.titulo };
 export const maxDuration = 120;
 
 export default async function PaginaAsistente() {
+  exigirModulo("asistente");
   const casos = await casosDeUso();
   const contexto = await casos.obtenerContexto();
 

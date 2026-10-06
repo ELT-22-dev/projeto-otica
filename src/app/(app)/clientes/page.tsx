@@ -8,6 +8,7 @@ import { formatearWhatsapp } from "@/domain/cliente/telefono";
 import { t } from "@/i18n";
 import { casosDeUso } from "@/infra/container";
 import { formatearFecha } from "@/lib/format";
+import { exigirModulo } from "@/app/_lib/exigir-modulo";
 
 export const metadata: Metadata = { title: t.clientes.titulo };
 
@@ -16,6 +17,7 @@ export default async function PaginaClientes({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  exigirModulo("clientes");
   const q = String((await searchParams).q ?? "")
     .slice(0, 60)
     .trim();

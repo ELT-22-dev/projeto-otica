@@ -4,6 +4,7 @@ import { EncabezadoPagina, ListaPedidosMini } from "@/components/gestion";
 import { t } from "@/i18n";
 import { casosDeUso } from "@/infra/container";
 import { cn } from "@/lib/utils";
+import { exigirModulo } from "@/app/_lib/exigir-modulo";
 
 export const metadata: Metadata = { title: t.laboratorio.titulo };
 
@@ -15,6 +16,7 @@ const COLUMNAS = [
 ] as const;
 
 export default async function PaginaLaboratorio() {
+  exigirModulo("laboratorio");
   const { hoy, grupos } = await (await casosDeUso()).obtenerLaboratorio();
 
   return (

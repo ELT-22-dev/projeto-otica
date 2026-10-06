@@ -7,10 +7,12 @@ import { Avatar } from "@/components/visual";
 import { t } from "@/i18n";
 import { casosDeUso } from "@/infra/container";
 import { formatearInstante } from "@/lib/format";
+import { exigirModulo } from "@/app/_lib/exigir-modulo";
 
 export const metadata: Metadata = { title: t.recetas.titulo };
 
 export default async function PaginaRecetas() {
+  exigirModulo("recetas");
   const recetas = await (await casosDeUso()).listarRecetas();
 
   return (

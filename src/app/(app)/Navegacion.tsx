@@ -26,6 +26,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Logo, iniciales } from "@/components/visual";
 import { t } from "@/i18n";
+import { moduloActivo, type Modulo } from "@/lib/modulos";
 import { cn } from "@/lib/utils";
 import { cerrarSesionAccion } from "./acciones";
 
@@ -173,7 +174,8 @@ function useNavegacion(esAdmin: boolean) {
   const ruta = usePathname();
   const activo = (href: string) =>
     href === "/pedidos" ? ruta.startsWith("/pedidos") && ruta !== "/pedidos/nuevo" : ruta.startsWith(href);
-  return { ruta, activo, items: ITEMS.filter((i) => !i.soloAdmin || esAdmin) };
+  const items = ITEMS.filter((i) => moduloActivo(i.href.slice(1) as Modulo) && (!i.soloAdmin || esAdmin));
+  return { ruta, activo, items };
 }
 
 /** Com teclado (tablet ou PC): N abre um pedido novo, / vai para a busca. */
@@ -289,12 +291,28 @@ export function BarraLateral({ esAdmin, optica, usuario }: Props) {
 
 const EN_BARRA_CELULAR = ["/inicio", "/pedidos", "/clientes"];
 
-/** Celular (< md): 3 atalhos + Nuevo no centro + "Más" com todos os módulos. */
+/**
+ * Celular (< md). Com até 4 módulos: todos na barra, com Nuevo no centro.
+ * Com mais: 3 atalhos + Nuevo + "Más" com todos os módulos.
+ */
 export function NavInferior({ esAdmin }: Pick<Props, "esAdmin">) {
   const { ruta, activo, items } = useNavegacion(esAdmin);
   const [abierto, setAbierto] = useState(false);
-  const fijos = EN_BARRA_CELULAR.map((h) => ITEMS.find((i) => i.href === h)!);
+  const fijos = EN_BARRA_CELULAR.map((h) => items.find((i) => i.href === h)).filter((i): i is Item => Boolean(i));
   const enMas = !fijos.some((i) => activo(i.href)) && ruta !== "/pedidos/nuevo";
+
+  const nuevo = (
+    <Link
+      href="/pedidos/nuevo"
+      aria-label={t.nuevo.titulo}
+      className={cn(
+        "bg-marca flex size-12 items-center justify-center rounded-full text-white shadow-lg shadow-violet-500/30 transition active:scale-95",
+        ruta === "/pedidos/nuevo" && "ring-4 ring-violet-200",
+      )}
+    >
+      <Plus className="size-6" />
+    </Link>
+  );
 
   const boton = (item: Item) => (
     <Link
@@ -310,23 +328,26 @@ export function NavInferior({ esAdmin }: Pick<Props, "esAdmin">) {
     </Link>
   );
 
+  if (items.length <= 4) {
+    const mitad = Math.ceil(items.length / 2);
+    return (
+      <nav className="fixed inset-x-0 bottom-0 z-30 border-t bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
+        <div className="mx-auto flex max-w-xl items-center justify-around gap-1 px-1 py-2">
+          {items.slice(0, mitad).map(boton)}
+          {nuevo}
+          {items.slice(mitad).map(boton)}
+        </div>
+      </nav>
+    );
+  }
+
   return (
     <>
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
         <div className="mx-auto flex max-w-xl items-center justify-around gap-1 px-1 py-2">
-          {boton(fijos[0]!)}
-          {boton(fijos[1]!)}
-          <Link
-            href="/pedidos/nuevo"
-            aria-label={t.nuevo.titulo}
-            className={cn(
-              "bg-marca flex size-12 items-center justify-center rounded-full text-white shadow-lg shadow-violet-500/30 transition active:scale-95",
-              ruta === "/pedidos/nuevo" && "ring-4 ring-violet-200",
-            )}
-          >
-            <Plus className="size-6" />
-          </Link>
-          {boton(fijos[2]!)}
+          {fijos.slice(0, 2).map(boton)}
+          {nuevo}
+          {fijos.slice(2).map(boton)}
           <button
             type="button"
             onClick={() => setAbierto(true)}
