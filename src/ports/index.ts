@@ -1,7 +1,8 @@
+import type { Cita, EstadoCita, Hora, NuevaCita } from "@/domain/cita/Cita";
 import type { Cliente, DatosNuevoCliente } from "@/domain/cliente/Cliente";
 import type { WhatsappE164 } from "@/domain/cliente/telefono";
-import type { CanalNotificacion, Notificacion, NuevaNotificacion } from "@/domain/notificacion/Notificacion";
-import type { Organizacion, Plantillas } from "@/domain/organizacion/Organizacion";
+import type { Notificacion, NuevaNotificacion } from "@/domain/notificacion/Notificacion";
+import type { AjustesBot, Organizacion, Plantillas } from "@/domain/organizacion/Organizacion";
 import type { CambioStatus, DatosNuevoPedido, Pedido } from "@/domain/pedido/Pedido";
 import type { StatusPedido } from "@/domain/pedido/status-pedido";
 import type { DatosReceta, Receta } from "@/domain/receta/Receta";
@@ -9,6 +10,7 @@ import type { CandidatoRenovacion, VentanaRenovacion } from "@/domain/renovacion
 import type { FechaISO } from "@/domain/shared/fecha";
 import type { Idioma } from "@/domain/shared/idioma";
 import type { Rol, UsuarioActual } from "@/domain/usuario/Usuario";
+import type { ConexionWhatsapp } from "@/domain/whatsapp/whatsapp";
 
 /** Pedido com os dados do cliente que as telas e os avisos precisam. */
 export interface PedidoConCliente extends Pedido {
@@ -35,6 +37,8 @@ export interface RegistroPedido {
 export interface ClienteRepository {
   buscar(texto: { nombre?: string; telefono?: string }, limite: number): Promise<Cliente[]>;
   obtenerPorId(id: string): Promise<Cliente | null>;
+  /** Clientes com qualquer uma dessas formas do número (ver variantesWhatsapp). */
+  buscarPorWhatsapp(variantes: WhatsappE164[]): Promise<Cliente[]>;
 }
 
 export interface PedidoRepository {
@@ -71,6 +75,7 @@ export interface CambiosOrganizacion {
   telefonoWhatsapp: WhatsappE164 | null;
   idiomaDefault: Idioma;
   plantillas: Plantillas;
+  bot: AjustesBot;
 }
 
 export interface OrganizacionRepository {
@@ -85,16 +90,18 @@ export interface SesionPort {
 export interface MensajeSaliente {
   telefono: WhatsappE164;
   texto: string;
+  clienteId?: string | null;
+  /** Conversa do WhatsApp onde responder, quando conhecida (pedido que chegou pelo próprio WhatsApp). */
+  jid?: string | null;
 }
 
 /**
  * - `requiere_accion`: o envio depende de uma pessoa (wa.me abre o WhatsApp com o texto pronto).
- * - `enviado`: o adaptador já entregou a mensagem (futuro: Baileys / API oficial).
+ * - `enviado`: o WhatsApp conectado por QR envia sozinho (a mensagem entrou na fila do serviço).
  */
 export type ResultadoEnvio = { tipo: "requiere_accion"; url: string } | { tipo: "enviado"; idExterno: string };
 
 export interface NotificadorPort {
-  readonly canal: CanalNotificacion;
   enviar(mensaje: MensajeSaliente): Promise<ResultadoEnvio>;
 }
 
@@ -219,4 +226,74 @@ export interface UsuarioRepository {
 
 export interface HasherPort {
   hash(contrasena: string): Promise<string>;
+}
+
+// Agenda --------------------------------------------------------------------
+
+export interface CambioCita {
+  estado: EstadoCita;
+  fecha?: FechaISO;
+  hora?: Hora;
+  notas?: string | null;
+}
+
+export interface CitaRepository {
+  crear(cita: NuevaCita, creadoPor: string | null): Promise<string>;
+  obtenerPorId(id: string): Promise<Cita | null>;
+  /** Citas com data no intervalo (inclusive), de qualquer estado. */
+  listarEntre(desde: FechaISO, hasta: FechaISO): Promise<Cita[]>;
+  listarSolicitadas(): Promise<Cita[]>;
+  /** Aplica só se a cita ainda estiver em `estadoEsperado`. */
+  actualizar(id: string, estadoEsperado: EstadoCita, cambio: CambioCita): Promise<boolean>;
+}
+
+// WhatsApp conectado --------------------------------------------------------
+
+export type DireccionMensaje = "entrante" | "saliente";
+export type OrigenMensaje = "cliente" | "aviso" | "ia" | "telefono";
+export type EstadoMensaje = "recibido" | "pendiente" | "enviado" | "error";
+
+export interface NuevoMensajeWhatsapp {
+  direccion: DireccionMensaje;
+  origen: OrigenMensaje;
+  estado: EstadoMensaje;
+  jid: string | null;
+  whatsapp: WhatsappE164 | null;
+  clienteId: string | null;
+  nombre: string | null;
+  texto: string;
+  idExterno?: string | null;
+}
+
+export interface MensajeWhatsapp extends NuevoMensajeWhatsapp {
+  id: string;
+  error: string | null;
+  requiereAtencion: boolean;
+  clienteNombre: string | null;
+  createdAt: string;
+}
+
+/**
+ * O serviço que mantém o WhatsApp da ótica vinculado por QR (worker/whatsapp.ts), acessado por HTTP.
+ * Fica fora da Vercel porque precisa de uma conexão aberta o tempo todo.
+ */
+export interface ServicioWhatsappPort {
+  /** null quando o serviço não responde (desligado, sem internet ou não configurado). */
+  estado(): Promise<ConexionWhatsapp | null>;
+  conectar(): Promise<void>;
+  desconectar(): Promise<void>;
+  /** Entrega a mensagem ao serviço, que envia e grava no histórico. Devolve o id do registro. */
+  enviar(m: { whatsapp: WhatsappE164; jid: string | null; clienteId: string | null; texto: string }): Promise<string>;
+}
+
+/** Histórico das conversas do WhatsApp conectado (e fila de envio do serviço). */
+export interface WhatsappRepository {
+  registrarMensaje(m: NuevoMensajeWhatsapp): Promise<string>;
+  existeIdExterno(idExterno: string): Promise<boolean>;
+  /** Últimas mensagens da conversa, da mais antiga para a mais nova. */
+  historial(jid: string, limite: number): Promise<MensajeWhatsapp[]>;
+  /** Últimas mensagens de todas as conversas, da mais nova para a mais antiga. */
+  recientes(limite: number): Promise<MensajeWhatsapp[]>;
+  marcarAtencion(jid: string, requiere: boolean): Promise<void>;
+  contarChatsConAtencion(): Promise<number>;
 }

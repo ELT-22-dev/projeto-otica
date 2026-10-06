@@ -2,9 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { formatearWhatsapp } from "@/domain/cliente/telefono";
 import type { StatusPedido } from "@/domain/pedido/status-pedido";
 import { cerrarSesion } from "@/infra/auth";
 import { casosDeUso } from "@/infra/container";
+import { qrSvg } from "@/lib/qr";
 import type { ResultadoEnvio } from "@/application";
 import { ejecutar, type ResultadoAccion } from "../_lib/resultado";
 
@@ -118,4 +120,75 @@ export async function restablecerContrasenaAccion(entrada: unknown): Promise<Res
     await (await casosDeUso()).restablecerContrasena(entrada);
     return null;
   });
+}
+
+// Agenda ----------------------------------------------------------------------
+
+export async function crearCitaAccion(entrada: unknown): Promise<ResultadoAccion<ResultadoEnvio | null>> {
+  const r = await ejecutar(async () => (await (await casosDeUso()).crearCita(entrada)).envio);
+  if (r.ok) refrescar();
+  return r;
+}
+
+export async function confirmarCitaAccion(entrada: unknown): Promise<ResultadoAccion<ResultadoEnvio | null>> {
+  const r = await ejecutar(async () => (await (await casosDeUso()).confirmarCita(entrada)).envio);
+  if (r.ok) refrescar();
+  return r;
+}
+
+export async function cambiarEstadoCitaAccion(id: string, estado: "atendida" | "cancelada"): Promise<ResultadoAccion> {
+  const r = await ejecutar(async () => {
+    await (await casosDeUso()).cambiarEstadoCita({ id, estado });
+    return null;
+  });
+  if (r.ok) refrescar();
+  return r;
+}
+
+// WhatsApp conectado ----------------------------------------------------------
+
+export interface EstadoWhatsappVista {
+  estado: "desconectado" | "esperando_qr" | "conectado";
+  /** QR já desenhado (SVG), só para o administrador. */
+  qrSvg: string | null;
+  numero: string | null;
+  servicioEnLinea: boolean;
+}
+
+/** Consultado a cada poucos segundos pela tela enquanto espera o QR ou a conexão. */
+export async function estadoWhatsappAccion(): Promise<ResultadoAccion<EstadoWhatsappVista>> {
+  return ejecutar(async () => {
+    const e = await (await casosDeUso()).obtenerWhatsapp();
+    return {
+      estado: e.estado,
+      qrSvg: e.qr ? await qrSvg(e.qr) : null,
+      numero: e.numero ? formatearWhatsapp(e.numero) : null,
+      servicioEnLinea: e.servicioEnLinea,
+    };
+  });
+}
+
+export async function conectarWhatsappAccion(): Promise<ResultadoAccion> {
+  return ejecutar(async () => {
+    await (await casosDeUso()).conectarWhatsapp();
+    return null;
+  });
+}
+
+export async function desconectarWhatsappAccion(): Promise<ResultadoAccion> {
+  const r = await ejecutar(async () => {
+    await (await casosDeUso()).desconectarWhatsapp();
+    return null;
+  });
+  if (r.ok) refrescar();
+  return r;
+}
+
+export async function marcarConversacionAtendidaAccion(jid: string): Promise<ResultadoAccion> {
+  const r = await ejecutar(async () => {
+    await (await casosDeUso()).marcarConversacionAtendida(jid);
+    return null;
+  });
+  if (r.ok) refrescar();
+  return r;
 }

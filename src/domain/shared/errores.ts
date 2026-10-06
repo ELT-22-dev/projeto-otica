@@ -18,7 +18,10 @@ export type CodigoErrorDominio =
   | "receta_no_legible"
   | "email_en_uso"
   | "contrasena_corta"
-  | "operacion_no_permitida";
+  | "operacion_no_permitida"
+  | "horario_invalido"
+  | "cita_sin_whatsapp"
+  | "whatsapp_servicio_apagado";
 
 export class ErrorDominio extends Error {
   readonly codigo: CodigoErrorDominio;

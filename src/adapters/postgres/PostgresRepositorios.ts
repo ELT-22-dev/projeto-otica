@@ -23,6 +23,7 @@ import {
   aReceta,
   COLUMNAS_CANDIDATO,
   COLUMNAS_CLIENTE,
+  COLUMNAS_CONFIGURACION,
   COLUMNAS_NOTIFICACION,
   COLUMNAS_RECETA,
   type FilaCandidato,
@@ -57,6 +58,17 @@ export class PostgresClienteRepository implements ClienteRepository {
       [id],
     );
     return filas[0] ? aCliente(filas[0]) : null;
+  }
+
+  async buscarPorWhatsapp(variantes: string[]): Promise<Cliente[]> {
+    if (variantes.length === 0) return [];
+    const filas = await consultar<FilaCliente>(
+      this.sql,
+      "clientes por whatsapp",
+      `select ${COLUMNAS_CLIENTE} from clientes where whatsapp = any($1::text[]) order by created_at limit 10`,
+      [variantes],
+    );
+    return filas.map(aCliente);
   }
 }
 
@@ -140,9 +152,7 @@ export class PostgresOrganizacionRepository implements OrganizacionRepository {
     const filas = await consultar<FilaConfiguracion>(
       this.sql,
       "obtener configuracion",
-      `select nombre, telefono_whatsapp, idioma_default::text as idioma_default,
-              plantilla_listo_es, plantilla_listo_pt, plantilla_renovacion_es, plantilla_renovacion_pt
-       from configuracion where id = 1`,
+      `select ${COLUMNAS_CONFIGURACION} from configuracion where id = 1`,
     );
     if (!filas[0]) throw new ErrorPersistencia("obtener configuracion", "tabla configuracion vacía");
     return aOrganizacion(filas[0]);
@@ -153,7 +163,8 @@ export class PostgresOrganizacionRepository implements OrganizacionRepository {
       this.sql,
       "actualizar configuracion",
       `update configuracion set nombre = $1, telefono_whatsapp = $2, idioma_default = $3,
-         plantilla_listo_es = $4, plantilla_listo_pt = $5, plantilla_renovacion_es = $6, plantilla_renovacion_pt = $7
+         plantilla_listo_es = $4, plantilla_listo_pt = $5, plantilla_renovacion_es = $6, plantilla_renovacion_pt = $7,
+         plantilla_cita_es = $8, plantilla_cita_pt = $9, ia_responde = $10, info_para_ia = $11
        where id = 1`,
       [
         c.nombre,
@@ -163,6 +174,10 @@ export class PostgresOrganizacionRepository implements OrganizacionRepository {
         c.plantillas.listo.pt,
         c.plantillas.renovacion.es,
         c.plantillas.renovacion.pt,
+        c.plantillas.cita.es,
+        c.plantillas.cita.pt,
+        c.bot.responde,
+        c.bot.info,
       ],
     );
   }

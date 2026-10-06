@@ -6,7 +6,7 @@ import { formatearNumeroPedido } from "@/domain/pedido/numero-pedido";
 import { fechaLocal, mesesCompletosEntre } from "@/domain/shared/fecha";
 import { t } from "@/i18n";
 import { formatearInstante } from "@/lib/format";
-import { BotonAvisar } from "./BotonAvisar";
+import { AyudaAviso, BotonAvisar } from "./BotonAvisar";
 
 /** O "sinal": quem está esperando aviso agora, com o botão de um toque em cada linha. */
 export function PanelPorAvisar({ datos, hoy }: { datos: PorAvisar; hoy: string }) {
@@ -23,7 +23,9 @@ export function PanelPorAvisar({ datos, hoy }: { datos: PorAvisar; hoy: string }
         </span>
         <div>
           <h2 className="text-lg font-semibold tracking-tight">{t.porAvisar.resumen(datos.total)}</h2>
-          <p className="text-sm text-emerald-900/70">{t.porAvisar.ayuda}</p>
+          <p className="text-sm text-emerald-900/70">
+            <AyudaAviso />
+          </p>
         </div>
       </div>
 

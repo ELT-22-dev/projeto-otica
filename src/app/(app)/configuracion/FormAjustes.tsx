@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquareText, Store } from "lucide-react";
+import { Bot, MessageSquareText, Store } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { TituloSeccion } from "@/components/visual";
+import { MODOS_RESPUESTA_IA, type ModoRespuestaIA } from "@/domain/organizacion/Organizacion";
 import type { Idioma } from "@/domain/shared/idioma";
 import { t } from "@/i18n";
 import { cn } from "@/lib/utils";
@@ -21,11 +22,22 @@ interface Valores {
   plantillaListoPt: string;
   plantillaRenovacionEs: string;
   plantillaRenovacionPt: string;
+  plantillaCitaEs: string;
+  plantillaCitaPt: string;
+  iaResponde: ModoRespuestaIA;
+  infoParaIa: string;
 }
 
-const PLANTILLAS = ["plantillaListoEs", "plantillaListoPt", "plantillaRenovacionEs", "plantillaRenovacionPt"] as const;
+const PLANTILLAS = [
+  "plantillaListoEs",
+  "plantillaListoPt",
+  "plantillaRenovacionEs",
+  "plantillaRenovacionPt",
+  "plantillaCitaEs",
+  "plantillaCitaPt",
+] as const;
 
-export function FormAjustes({ inicial }: { inicial: Valores }) {
+export function FormAjustes({ inicial, iaDisponible }: { inicial: Valores; iaDisponible: boolean }) {
   const [valores, setValores] = useState(inicial);
   const [error, setError] = useState<{ mensaje: string; campo?: string } | null>(null);
   const [guardando, iniciar] = useTransition();
@@ -115,6 +127,54 @@ export function FormAjustes({ inicial }: { inicial: Valores }) {
               />
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-3 rounded-2xl border bg-card p-4 shadow-xs md:p-5">
+        <TituloSeccion icono={Bot} tono="fucsia">
+          {t.ajustes.ia}
+        </TituloSeccion>
+        <p className="-mt-1 pl-10.5 text-xs text-muted-foreground">{t.ajustes.iaAyuda}</p>
+        {!iaDisponible && (
+          <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900 ring-1 ring-amber-100">
+            {t.ajustes.iaSinConfigurar}
+          </p>
+        )}
+        <div className="grid gap-3 md:grid-cols-[18rem_1fr] md:gap-4">
+          <div className="flex flex-col gap-1.5">
+            <Label>{t.ajustes.iaResponde}</Label>
+            <div className="flex flex-col gap-1.5">
+              {MODOS_RESPUESTA_IA.map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => cambiar("iaResponde", m)}
+                  aria-pressed={valores.iaResponde === m}
+                  className={cn(
+                    "h-10 rounded-xl border px-3 text-left text-sm font-medium transition",
+                    valores.iaResponde === m
+                      ? "border-fuchsia-600 bg-fuchsia-600 text-white"
+                      : "bg-background hover:bg-muted",
+                  )}
+                >
+                  {t.ajustes.modosIa[m]}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="infoParaIa">{t.ajustes.infoParaIa}</Label>
+            <Textarea
+              id="infoParaIa"
+              value={valores.infoParaIa}
+              onChange={(e) => cambiar("infoParaIa", e.target.value)}
+              placeholder={t.ajustes.infoParaIaPlaceholder}
+              rows={6}
+              maxLength={3000}
+              className="text-base"
+            />
+            <p className="text-xs text-muted-foreground">{t.ajustes.infoParaIaAyuda}</p>
+          </div>
         </div>
       </section>
 

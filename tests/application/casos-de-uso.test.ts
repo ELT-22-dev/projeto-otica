@@ -199,6 +199,10 @@ describe("configuração", () => {
     plantillaListoPt: "Olá {nombre}",
     plantillaRenovacionEs: "Hola {nombre}, {optica}",
     plantillaRenovacionPt: "Olá {nombre}, {optica}",
+    plantillaCitaEs: "Hola {nombre}, {fecha} {hora}",
+    plantillaCitaPt: "Olá {nombre}, {fecha} {hora}",
+    iaResponde: "clientes",
+    infoParaIa: "",
   };
 
   it("só admin altera", async () => {

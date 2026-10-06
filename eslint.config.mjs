@@ -40,7 +40,11 @@ const camadas = [
   {
     files: ["src/app/**", "src/components/**"],
     rules: proibido(
-      [{ group: ["@neondatabase/*", "pg", "@anthropic-ai/*", "@/adapters/*", "@/infra/db", "@/ports", "@/ports/*"] }],
+      [
+        {
+          group: ["@neondatabase/*", "pg", "@anthropic-ai/*", "openai", "baileys", "@/adapters/*", "@/infra/db", "@/ports", "@/ports/*"],
+        },
+      ],
       "A UI chama casos de uso (via @/infra/container), nunca o banco ou adapters direto.",
     ),
   },

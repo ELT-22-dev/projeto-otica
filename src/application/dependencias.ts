@@ -2,6 +2,7 @@ import { ErrorDominio } from "@/domain/shared/errores";
 import { esAdmin, type UsuarioActual } from "@/domain/usuario/Usuario";
 import type {
   AsistentePort,
+  CitaRepository,
   ClienteRepository,
   ConsultasRepository,
   HasherPort,
@@ -13,8 +14,10 @@ import type {
   RecetaRepository,
   Reloj,
   RenovacionRepository,
+  ServicioWhatsappPort,
   SesionPort,
   UsuarioRepository,
+  WhatsappRepository,
 } from "@/ports";
 
 export interface Dependencias {
@@ -30,6 +33,9 @@ export interface Dependencias {
   consultas: ConsultasRepository;
   usuarios: UsuarioRepository;
   hasher: HasherPort;
+  citas: CitaRepository;
+  whatsapp: WhatsappRepository;
+  servicioWhatsapp: ServicioWhatsappPort;
   /** null quando não há chave de IA configurada: as funções de IA ficam desligadas. */
   lectorReceta: LectorRecetaPort | null;
   asistente: AsistentePort | null;

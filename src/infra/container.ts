@@ -1,9 +1,9 @@
 import "server-only";
 import { connection } from "next/server";
 import { cache } from "react";
-import Anthropic from "@anthropic-ai/sdk";
-import { ClaudeAsistente, ClaudeLectorReceta } from "@/adapters/ia/ClaudeIA";
-import { WaMeNotificador } from "@/adapters/notificador/WaMeNotificador";
+import { configIADesdeEnv, crearIA, type IA } from "@/adapters/ia/fabrica";
+import { NotificadorWhatsapp } from "@/adapters/notificador/NotificadorWhatsapp";
+import { PostgresCitaRepository } from "@/adapters/postgres/PostgresCitaRepository";
 import { PostgresConsultas } from "@/adapters/postgres/PostgresConsultas";
 import { PostgresPedidoRepository } from "@/adapters/postgres/PostgresPedidoRepository";
 import {
@@ -14,6 +14,8 @@ import {
   PostgresRenovacionRepository,
   PostgresUsuarioRepository,
 } from "@/adapters/postgres/PostgresRepositorios";
+import { PostgresWhatsappRepository } from "@/adapters/postgres/PostgresWhatsappRepository";
+import { ServicioWhatsappHttp, servicioWhatsappApagado } from "@/adapters/whatsapp/ServicioWhatsappHttp";
 import { crearCasosDeUso, type CasosDeUso } from "@/application";
 import { SesionCookie } from "./auth";
 import { sql } from "./db";
@@ -21,26 +23,33 @@ import { hashSenha } from "./password";
 
 /**
  * Composition root: o único lugar que conhece application e adapters ao mesmo tempo.
- * Trocar o WhatsApp (wa.me → envio automático) é trocar o notificador aqui.
  * Uma instância por request (React cache), porque a sessão é do usuário daquele request.
+ *
+ * IA: Claude, OpenAI ou NVIDIA conforme IA_PROVEEDOR (ver adapters/ia/fabrica.ts).
+ * Sem IA_ACTIVA=1 e chave, o sistema funciona normalmente, só sem as funções de IA.
  */
-/**
- * IA só com IA_ACTIVA=1 e ANTHROPIC_API_KEY. Sem isso o sistema funciona normalmente,
- * apenas sem leitura de receita por foto e sem assistente.
- */
-let claude: Anthropic | null | undefined;
-function clienteClaude(): Anthropic | null {
-  if (claude === undefined) {
-    const activa = process.env.IA_ACTIVA === "1" && Boolean(process.env.ANTHROPIC_API_KEY);
-    claude = activa ? new Anthropic({ timeout: 90_000, maxRetries: 1 }) : null;
+let ia: IA | null | undefined;
+function iaConfigurada(): IA | null {
+  if (ia === undefined) {
+    const config = configIADesdeEnv(process.env);
+    ia = config ? crearIA(config) : null;
   }
-  return claude;
+  return ia;
+}
+
+/** Serviço do WhatsApp por QR (worker/whatsapp.ts). Sem WHATSAPP_URL, o sistema usa só wa.me. */
+function servicioWhatsapp() {
+  const url = process.env.WHATSAPP_URL?.trim();
+  const token = process.env.WHATSAPP_TOKEN?.trim();
+  return url && token ? new ServicioWhatsappHttp(url.endsWith("/") ? url : `${url}/`, token) : servicioWhatsappApagado;
 }
 
 export const casosDeUso = cache(async (): Promise<CasosDeUso> => {
   // Dados de sessão e do banco: nunca pré-renderizar no build.
   await connection();
   const db = sql();
+  const reloj = { ahora: () => new Date() };
+  const servicio = servicioWhatsapp();
   return crearCasosDeUso({
     clientes: new PostgresClienteRepository(db),
     pedidos: new PostgresPedidoRepository(db),
@@ -49,12 +58,16 @@ export const casosDeUso = cache(async (): Promise<CasosDeUso> => {
     renovaciones: new PostgresRenovacionRepository(db),
     organizacion: new PostgresOrganizacionRepository(db),
     sesion: new SesionCookie(),
-    notificador: new WaMeNotificador(),
-    reloj: { ahora: () => new Date() },
+    // WhatsApp conectado por QR envia sozinho; sem conexão, cai no wa.me.
+    notificador: new NotificadorWhatsapp(servicio),
+    reloj,
     consultas: new PostgresConsultas(db),
     usuarios: new PostgresUsuarioRepository(db),
     hasher: { hash: hashSenha },
-    lectorReceta: clienteClaude() ? new ClaudeLectorReceta(clienteClaude()!) : null,
-    asistente: clienteClaude() ? new ClaudeAsistente(clienteClaude()!) : null,
+    citas: new PostgresCitaRepository(db),
+    whatsapp: new PostgresWhatsappRepository(db),
+    servicioWhatsapp: servicio,
+    lectorReceta: iaConfigurada()?.lectorReceta ?? null,
+    asistente: iaConfigurada()?.asistente ?? null,
   });
 });

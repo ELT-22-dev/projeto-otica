@@ -33,7 +33,7 @@ function resumenPedido(p: PedidoConCliente, hoy: string) {
   };
 }
 
-function herramienta<S extends z.ZodObject>(
+export function herramienta<S extends z.ZodObject>(
   nombre: string,
   descripcion: string,
   esquema: S,

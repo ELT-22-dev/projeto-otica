@@ -54,3 +54,16 @@ export function formatearWhatsapp(e164: WhatsappE164): string {
   }
   return `+${e164}`;
 }
+
+/**
+ * Formas do mesmo número que podem aparecer no WhatsApp. Celulares brasileiros antigos
+ * continuam registrados sem o 9 (55 11 8765-4321), então o chat pode chegar com ou sem ele.
+ */
+export function variantesWhatsapp(e164: WhatsappE164): WhatsappE164[] {
+  if (!e164.startsWith("55")) return [e164];
+  const ddd = e164.slice(2, 4);
+  const local = e164.slice(4);
+  if (local.length === 9 && local.startsWith("9")) return [e164, `55${ddd}${local.slice(1)}`];
+  if (local.length === 8 && /^[6-9]/.test(local)) return [e164, `55${ddd}9${local}`];
+  return [e164];
+}

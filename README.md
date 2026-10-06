@@ -1,6 +1,8 @@
 # Sistema de Pedidos — Óticas Latina
 
-Gestão de pedidos de uma ótica, mais fácil que o caderno. Interface em espanhol, mobile-first, avisos ao cliente pelo WhatsApp (wa.me).
+Gestão de pedidos de uma ótica, mais fácil que o caderno. Interface em espanhol, mobile-first.
+Avisos ao cliente pelo WhatsApp: com um toque pelo wa.me, ou sozinhos com o WhatsApp da ótica conectado por QR
+(e então a IA também responde dúvidas e anota pedidos de cita). Agenda de citas.
 
 **Stack:** Next.js 16 (App Router) · TypeScript strict · Postgres no **Neon** · Tailwind + shadcn/ui · Zod · Vitest · Vercel.
 Tudo num deploy só: as telas, as Server Actions (backend) e o login rodam na Vercel; o banco fica no Neon.
@@ -14,7 +16,9 @@ Hexagonal (ports & adapters). As setas são as únicas dependências permitidas,
 ```
 app (UI) ──► infra/container ──► application ──► domain
                     │                  └──────► ports ──► domain
-                    └──► adapters (Postgres, wa.me) ──► ports, domain
+                    └──► adapters (Postgres, wa.me, IA, serviço WhatsApp) ──► ports, domain
+
+worker/whatsapp.ts (fora da Vercel) ──► application (bot), adapters, domain
 ```
 
 | Pasta | O que tem | Pode importar |
@@ -22,11 +26,14 @@ app (UI) ──► infra/container ──► application ──► domain
 | `src/domain` | Regras puras: status do pedido, renovação, telefone, templates, dinheiro, datas | nada |
 | `src/ports` | Interfaces: repositórios, `NotificadorPort`, `SesionPort`, `Reloj` | domain |
 | `src/application` | Casos de uso + validação Zod das entradas | domain, ports, zod |
-| `src/adapters` | Repositórios Postgres (SQL puro sobre a interface `Sql`), `WaMeNotificador` | domain, ports |
+| `src/adapters` | Repositórios Postgres (SQL puro sobre a interface `Sql`), notificadores, IA (Claude / OpenAI / NVIDIA), cliente HTTP do serviço do WhatsApp | domain, ports |
 | `src/infra` | Driver Neon, login/sessão, `container.ts` (composition root) | tudo acima |
 | `src/app`, `src/components` | Telas e Server Actions | application, domain, infra/container |
 
-**Trocar wa.me por envio automático** (Baileys / API oficial): criar um adapter que implementa `NotificadorPort` devolvendo `{ tipo: "enviado" }` e trocar uma linha em `src/infra/container.ts`.
+| `worker` | Serviço do WhatsApp por QR (Baileys): processo separado, sempre ligado | tudo acima |
+
+**Avisos:** `NotificadorWhatsapp` pergunta ao serviço do WhatsApp se está conectado. Se sim, ele envia sozinho
+(`{ tipo: "enviado" }`); se não (desligado, sem `WHATSAPP_URL`, celular desvinculado), devolve o link wa.me.
 
 ### Segurança
 - O banco só é acessado pelo servidor. `DATABASE_URL` e `SESSION_SECRET` nunca têm prefixo `NEXT_PUBLIC_` e nunca chegam ao navegador.
@@ -103,6 +110,33 @@ npm run typecheck
 
 ---
 
+## WhatsApp conectado por QR + IA (opcional)
+
+Sem isso o sistema funciona com wa.me (um toque abre o WhatsApp com a mensagem pronta). Com o serviço ligado:
+
+- **Ajustes de conexão:** tela *Avisos WhatsApp* → *Conectar con QR* → no celular da ótica, *Dispositivos vinculados* → *Vincular*.
+  Desconecta pela mesma tela ou pelo celular, quando quiser.
+- **Avisos** de óculos prontos, renovação e cita confirmada saem sozinhos (com um intervalo de 1,5–3,5 s entre mensagens).
+- **IA no WhatsApp:** responde dúvidas com o texto de *Ajustes → Lo que la IA puede contar*, consulta o pedido do próprio
+  número, anota pedidos de cita (aparecem na *Agenda* para confirmar dia e hora) e marca "Necesita respuesta" quando não sabe.
+  Fica quieta por 12 h numa conversa em que alguém da ótica respondeu pelo celular. *Ajustes* define se responde a ninguém,
+  só a clientes cadastrados ou a todos.
+- **Ligações** não passam pelo serviço: continuam tocando no celular. Mensagens não são marcadas como lidas.
+
+**Rodar o serviço** (`worker/whatsapp.ts`): precisa ficar ligado 24 h, então não roda na Vercel. Qualquer Node 22 serve
+(Railway, Render pago, Fly, VPS). Comando de build `npm ci`, comando de início `npm run whatsapp`. Variáveis:
+`DATABASE_URL`, `WHATSAPP_TOKEN` e as da IA (ver `.env.example`). No app (Vercel): `WHATSAPP_URL` (endereço público do
+serviço) e o mesmo `WHATSAPP_TOKEN`. As credenciais do aparelho ficam no banco (`whatsapp_auth`): reiniciar o serviço
+não pede QR de novo.
+
+**Por que HTTP e não o banco** para app ↔ serviço: um serviço consultando o Neon a cada poucos segundos impediria o banco de
+dormir e estouraria as 100 CU-horas do plano grátis em ~2 semanas. Assim o banco só acorda quando algo acontece.
+
+**Atenção:** Baileys não é a API oficial do WhatsApp. Para avisos a clientes que já conhecem a ótica o risco é baixo,
+mas o WhatsApp pode bloquear números que mandam mensagens em massa ou recebem muitas denúncias. Não usar para propaganda.
+
+---
+
 ## Produção
 
 - **App:** https://projeto-otica-psi.vercel.app (projeto `projeto-otica` no time EDLT24 da Vercel)
@@ -139,5 +173,6 @@ rm .env.neon.local                                              # não deixar cr
 ## Custos e observações
 - **Neon grátis:** 1 GB e 100 horas de processamento por mês (limites mudam; ver neon.com/pricing). O banco "dorme" após 5 min sem uso; o primeiro acesso depois disso leva um instante a mais. Backup (restaurar no tempo) só das últimas 6 horas.
 - **Neon pago (Launch):** por uso, sem mínimo; backup de até 7 dias. Recomendado quando a ótica depender do sistema.
-- **Log de avisos:** com wa.me o sistema registra "aviso gerado", não "mensagem entregue".
+- **Log de avisos:** com wa.me o sistema registra "aviso gerado", não "mensagem entregue". Com o WhatsApp conectado, o
+  histórico mostra "Enviando…" até o serviço confirmar e "No se pudo enviar" depois de 3 tentativas.
 - **Fuso horário:** datas de negócio usam `America/Sao_Paulo`.

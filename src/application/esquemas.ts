@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MODOS_RESPUESTA_IA } from "@/domain/organizacion/Organizacion";
 import { STATUS_PEDIDO } from "@/domain/pedido/status-pedido";
 import { IDIOMAS } from "@/domain/shared/idioma";
 
@@ -78,6 +79,10 @@ export const esquemaConfiguracion = z.object({
   plantillaListoPt: plantilla,
   plantillaRenovacionEs: plantilla,
   plantillaRenovacionPt: plantilla,
+  plantillaCitaEs: plantilla,
+  plantillaCitaPt: plantilla,
+  iaResponde: z.enum(MODOS_RESPUESTA_IA),
+  infoParaIa: z.string().trim().max(3000),
 });
 export type EntradaConfiguracion = z.input<typeof esquemaConfiguracion>;
 
@@ -98,3 +103,36 @@ export const esquemaPreguntaAsistente = z.object({
     .max(12)
     .default([]),
 });
+
+// Agenda ----------------------------------------------------------------------
+
+export const esquemaCrearCita = z.object({
+  cliente: z.discriminatedUnion("tipo", [
+    z.object({ tipo: z.literal("existente"), id: z.uuid() }),
+    z.object({
+      tipo: z.literal("nuevo"),
+      nombre: z.string().trim().min(2).max(120),
+      whatsapp: z.string().trim().min(1).max(25),
+    }),
+  ]),
+  fecha: z.iso.date(),
+  hora: z.string().trim().min(1).max(8),
+  motivo: textoOpcional(300).transform((v) => v ?? null),
+  notas: textoOpcional(1000).transform((v) => v ?? null),
+  avisar: z.boolean().default(true),
+});
+export type EntradaCrearCita = z.input<typeof esquemaCrearCita>;
+
+export const esquemaConfirmarCita = z.object({
+  id: z.uuid(),
+  fecha: z.iso.date(),
+  hora: z.string().trim().min(1).max(8),
+  avisar: z.boolean().default(true),
+});
+
+export const esquemaEstadoCita = z.object({
+  id: z.uuid(),
+  estado: z.enum(["atendida", "cancelada"]),
+});
+
+export const esquemaJid = z.string().trim().min(5).max(100);

@@ -1,0 +1,4 @@
+{
+  "//": "Baileys 7 só existe como ES module: o serviço do WhatsApp roda como ESM.",
+  "type": "module"
+}

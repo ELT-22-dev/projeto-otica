@@ -18,7 +18,7 @@ export default async function PaginaNuevoPedido() {
       <FormNuevoPedido
         hoy={fechaLocal(new Date())}
         idiomaDefault={contexto?.organizacion.idiomaDefault ?? "es"}
-        iaDisponible={casos.iaDisponible}
+        iaDisponible={casos.lecturaRecetaDisponible}
       />
     </div>
   );

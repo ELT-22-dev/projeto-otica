@@ -4,10 +4,16 @@ import { numeroPedidoSinPrefijo } from "@/domain/pedido/numero-pedido";
 import { esElegibleRenovacion } from "@/domain/renovacion/regla-renovacion";
 import { ErrorDominio } from "@/domain/shared/errores";
 import { fechaLocal } from "@/domain/shared/fecha";
+import type { CanalNotificacion } from "@/domain/notificacion/Notificacion";
 import type { ResultadoEnvio } from "@/ports";
 import { requerirUsuario, type Dependencias } from "../dependencias";
 import { esquemaId } from "../esquemas";
 import { marcarComoListo } from "../pedidos/cambiarStatus";
+
+/** Enviado sozinho pelo WhatsApp conectado, ou link wa.me para a atendente tocar "enviar". */
+export function canalDe(r: ResultadoEnvio): CanalNotificacion {
+  return r.tipo === "enviado" ? "whatsapp" : "wa_me";
+}
 
 type DepsAviso = Pick<Dependencias, "pedidos" | "organizacion" | "notificador" | "notificaciones" | "sesion" | "reloj">;
 
@@ -28,13 +34,17 @@ export function generarAvisoCliente(deps: DepsAviso) {
       numeroPedido: numeroPedidoSinPrefijo(pedido.numero),
     });
 
-    const resultado = await deps.notificador.enviar({ telefono: pedido.cliente.whatsapp, texto });
+    const resultado = await deps.notificador.enviar({
+      telefono: pedido.cliente.whatsapp,
+      texto,
+      clienteId: pedido.cliente.id,
+    });
     await deps.notificaciones.registrar(
       {
         clienteId: pedido.cliente.id,
         pedidoId: pedido.id,
         tipo: "listo",
-        canal: deps.notificador.canal,
+        canal: canalDe(resultado),
         mensaje: texto,
       },
       usuario.id,
@@ -72,13 +82,17 @@ export function avisarRenovacion(
       optica: org.nombre,
     });
 
-    const resultado = await deps.notificador.enviar({ telefono: candidato.whatsapp, texto });
+    const resultado = await deps.notificador.enviar({
+      telefono: candidato.whatsapp,
+      texto,
+      clienteId: candidato.clienteId,
+    });
     await deps.notificaciones.registrar(
       {
         clienteId: candidato.clienteId,
         pedidoId: candidato.pedidoId,
         tipo: "renovacion",
-        canal: deps.notificador.canal,
+        canal: canalDe(resultado),
         mensaje: texto,
       },
       usuario.id,

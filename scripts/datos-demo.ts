@@ -48,7 +48,7 @@ export async function sembrarDemo(
     );
   }
 
-  await q(`truncate notificaciones, recetas, pedidos, clientes restart identity`);
+  await q(`truncate mensajes_whatsapp, citas, notificaciones, recetas, pedidos, clientes restart identity`);
 
   const clientes: Record<string, string> = {};
   const listaClientes: [string, string, string, "es" | "pt"][] = [

@@ -1,4 +1,5 @@
 import { avisarRenovacion, generarAvisoCliente, listoYAvisar } from "./avisos/avisos";
+import { cambiarEstadoCita, confirmarCita, crearCita, obtenerAgenda, resumenAgenda } from "./citas/citas";
 import { buscarClientes, obtenerFichaCliente } from "./clientes/clientes";
 import { obtenerPorAvisar } from "./avisos/porAvisar";
 import type { Dependencias } from "./dependencias";
@@ -19,6 +20,14 @@ import { cambiarStatusPedido, marcarComoEntregado, marcarComoListo } from "./ped
 import { contarPedidosPorStatus, listarPedidos, obtenerPedido } from "./pedidos/consultas";
 import { crearPedido } from "./pedidos/crearPedido";
 import { listarRenovaciones } from "./renovaciones/listarRenovaciones";
+import {
+  conectarWhatsapp,
+  desconectarWhatsapp,
+  listarConversaciones,
+  marcarConversacionAtendida,
+  obtenerWhatsapp,
+  resumenWhatsapp,
+} from "./whatsapp/whatsapp";
 
 export function crearCasosDeUso(deps: Dependencias) {
   return {
@@ -52,19 +61,37 @@ export function crearCasosDeUso(deps: Dependencias) {
     crearUsuario: crearUsuario(deps),
     actualizarUsuario: actualizarUsuario(deps),
     restablecerContrasena: restablecerContrasena(deps),
-    iaDisponible: deps.lectorReceta !== null && deps.asistente !== null,
+    crearCita: crearCita(deps),
+    confirmarCita: confirmarCita(deps),
+    cambiarEstadoCita: cambiarEstadoCita(deps),
+    obtenerAgenda: obtenerAgenda(deps),
+    resumenAgenda: resumenAgenda(deps),
+    obtenerWhatsapp: obtenerWhatsapp(deps),
+    conectarWhatsapp: conectarWhatsapp(deps),
+    desconectarWhatsapp: desconectarWhatsapp(deps),
+    listarConversaciones: listarConversaciones(deps),
+    marcarConversacionAtendida: marcarConversacionAtendida(deps),
+    resumenWhatsapp: resumenWhatsapp(deps),
+    /** Assistente e respostas no WhatsApp. */
+    iaDisponible: deps.asistente !== null,
+    /** Leitura de receita por foto: precisa de um modelo com visão. */
+    lecturaRecetaDisponible: deps.lectorReceta !== null,
   };
 }
 
 export type CasosDeUso = ReturnType<typeof crearCasosDeUso>;
 export type { PorAvisar } from "./avisos/porAvisar";
+export type { ResultadoCita } from "./citas/citas";
+export { crearCasosDeUsoBot, type CasosDeUsoBot, type MensajeRecibido } from "./whatsapp/bot";
+export type { Conversacion, EstadoPanelWhatsapp } from "./whatsapp/whatsapp";
 export type { Dependencias } from "./dependencias";
 export type { ClienteParaRenovar } from "./renovaciones/listarRenovaciones";
-export type { EntradaConfiguracion, EntradaCrearPedido } from "./esquemas";
+export type { EntradaConfiguracion, EntradaCrearCita, EntradaCrearPedido } from "./esquemas";
 export type {
   AvisoConCliente,
   ClienteResumen,
   MensajeAsistente,
+  MensajeWhatsapp,
   PedidoConCliente,
   RecetaConCliente,
   ResultadoEnvio,

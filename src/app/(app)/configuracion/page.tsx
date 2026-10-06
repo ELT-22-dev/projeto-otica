@@ -9,9 +9,10 @@ import { FormAjustes } from "./FormAjustes";
 export const metadata: Metadata = { title: t.ajustes.titulo };
 
 export default async function PaginaAjustes() {
+  const casos = await casosDeUso();
   let org;
   try {
-    org = await (await casosDeUso()).obtenerConfiguracion();
+    org = await casos.obtenerConfiguracion();
   } catch (e) {
     if (e instanceof ErrorDominio && e.codigo === "no_autorizado") {
       return <p className="py-12 text-center text-sm text-muted-foreground">{t.ajustes.soloAdmin}</p>;
@@ -34,7 +35,12 @@ export default async function PaginaAjustes() {
           plantillaListoPt: org.plantillas.listo.pt,
           plantillaRenovacionEs: org.plantillas.renovacion.es,
           plantillaRenovacionPt: org.plantillas.renovacion.pt,
+          plantillaCitaEs: org.plantillas.cita.es,
+          plantillaCitaPt: org.plantillas.cita.pt,
+          iaResponde: org.bot.responde,
+          infoParaIa: org.bot.info,
         }}
+        iaDisponible={casos.iaDisponible}
       />
     </div>
   );

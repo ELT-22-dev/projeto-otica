@@ -2,6 +2,7 @@
 
 import {
   BarChart3,
+  CalendarDays,
   ClipboardList,
   Eye,
   FlaskConical,
@@ -37,7 +38,7 @@ interface Props {
   /** Clientes esperando aviso, por seção (ex.: "/pedidos": 2). */
   avisos?: Record<string, number>;
   /** Números do dia para o quadro "Hoy" da barra lateral (desktop). */
-  resumen?: { porAvisar: number; enLaboratorio: number; listos: number };
+  resumen?: { porAvisar: number; enLaboratorio: number; listos: number; citas: number };
 }
 
 function CuadroHoy({ resumen }: { resumen: NonNullable<Props["resumen"]> }) {
@@ -50,6 +51,9 @@ function CuadroHoy({ resumen }: { resumen: NonNullable<Props["resumen"]> }) {
       punto: "bg-amber-400",
     },
     { etiqueta: t.hoy.listos, valor: resumen.listos, href: "/pedidos?estado=listo", punto: "bg-emerald-500" },
+    ...(moduloActivo("agenda")
+      ? [{ etiqueta: t.hoy.citas, valor: resumen.citas, href: "/agenda", punto: "bg-cyan-500" }]
+      : []),
   ];
   return (
     <div className="mx-3 mb-3 hidden rounded-2xl bg-linear-to-br from-violet-50 to-fuchsia-50 p-3 ring-1 ring-violet-100 lg:block">
@@ -144,6 +148,14 @@ const ITEMS: Item[] = [
     tile: "bg-indigo-100 text-indigo-700",
   },
   {
+    href: "/agenda",
+    etiqueta: t.nav.agenda,
+    Icono: CalendarDays,
+    activo: "bg-cyan-100 text-cyan-700",
+    icono: "text-cyan-600",
+    tile: "bg-cyan-100 text-cyan-700",
+  },
+  {
     href: "/renovaciones",
     etiqueta: t.nav.renovaciones,
     Icono: RefreshCcw,
@@ -222,8 +234,8 @@ const ITEMS: Item[] = [
   },
 ];
 
-/** O fluxo do dia vem primeiro: pedidos, renovações e avisos; o resto segue a ordem do menu completo. */
-const PRIMEIROS = ["/inicio", "/pedidos", "/renovaciones", "/whatsapp"];
+/** O fluxo do dia vem primeiro: pedidos, agenda, renovações e avisos; o resto segue a ordem do menu completo. */
+const PRIMEIROS = ["/inicio", "/pedidos", "/agenda", "/renovaciones", "/whatsapp"];
 const prioridad = (href: string) => {
   const i = PRIMEIROS.indexOf(href);
   return i >= 0 ? i - PRIMEIROS.length : ITEMS.findIndex((x) => x.href === href);
@@ -356,7 +368,7 @@ export function BarraLateral({ esAdmin, optica, usuario, avisos = {}, resumen }:
   );
 }
 
-const EN_BARRA_CELULAR = ["/pedidos", "/renovaciones", "/whatsapp"];
+const EN_BARRA_CELULAR = ["/pedidos", "/agenda", "/whatsapp"];
 
 /**
  * Celular (< md). Com até 4 módulos: todos na barra, com Nuevo no centro.
@@ -367,6 +379,8 @@ export function NavInferior({ esAdmin, avisos = {} }: Pick<Props, "esAdmin" | "a
   const [abierto, setAbierto] = useState(false);
   const fijos = EN_BARRA_CELULAR.map((h) => items.find((i) => i.href === h)).filter((i): i is Item => Boolean(i));
   const enMas = !fijos.some((i) => activo(i.href)) && ruta !== "/pedidos/nuevo";
+  // Quem espera ação nas seções que ficaram dentro do "Más".
+  const avisosEnMas = items.filter((i) => !fijos.includes(i)).reduce((total, i) => total + (avisos[i.href] ?? 0), 0);
 
   const nuevo = (
     <Link
@@ -426,7 +440,10 @@ export function NavInferior({ esAdmin, avisos = {} }: Pick<Props, "esAdmin" | "a
               enMas && "font-semibold text-foreground",
             )}
           >
-            <LayoutGrid className={cn("size-5", enMas && "text-violet-600")} />
+            <span className="relative">
+              <LayoutGrid className={cn("size-5", enMas && "text-violet-600")} />
+              <Contador n={avisosEnMas} className="absolute -top-2 -right-3" />
+            </span>
             {t.nav.mas}
           </button>
         </div>
@@ -463,8 +480,9 @@ export function NavInferior({ esAdmin, avisos = {} }: Pick<Props, "esAdmin" | "a
                     activo(href) && "border-violet-300 bg-violet-50",
                   )}
                 >
-                  <span className={cn("flex size-11 items-center justify-center rounded-xl", tile)}>
+                  <span className={cn("relative flex size-11 items-center justify-center rounded-xl", tile)}>
                     <Icono className="size-5" />
+                    <Contador n={avisos[href]} className="absolute -top-1.5 -right-1.5" />
                   </span>
                   <span className="leading-tight">{etiqueta}</span>
                   {pronto && <EtiquetaPronto />}

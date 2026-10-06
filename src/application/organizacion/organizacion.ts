@@ -31,7 +31,9 @@ export function actualizarConfiguracion(deps: Pick<Dependencias, "organizacion" 
       plantillas: {
         listo: { es: validarPlantilla(d.plantillaListoEs), pt: validarPlantilla(d.plantillaListoPt) },
         renovacion: { es: validarPlantilla(d.plantillaRenovacionEs), pt: validarPlantilla(d.plantillaRenovacionPt) },
+        cita: { es: validarPlantilla(d.plantillaCitaEs), pt: validarPlantilla(d.plantillaCitaPt) },
       },
+      bot: { responde: d.iaResponde, info: d.infoParaIa },
     });
   };
 }

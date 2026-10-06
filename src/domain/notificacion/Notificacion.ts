@@ -1,7 +1,8 @@
-export const TIPOS_NOTIFICACION = ["listo", "renovacion"] as const;
+export const TIPOS_NOTIFICACION = ["listo", "renovacion", "cita"] as const;
 export type TipoNotificacion = (typeof TIPOS_NOTIFICACION)[number];
 
-export const CANALES_NOTIFICACION = ["wa_me"] as const;
+/** wa_me: a atendente envia pelo link. whatsapp: enviado automaticamente pelo WhatsApp conectado. */
+export const CANALES_NOTIFICACION = ["wa_me", "whatsapp"] as const;
 export type CanalNotificacion = (typeof CANALES_NOTIFICACION)[number];
 
 export interface NuevaNotificacion {

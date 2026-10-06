@@ -1,6 +1,6 @@
 /**
  * Módulos visíveis no sistema. O piloto da Óticas Latina usa só o essencial:
- * registrar pedidos, avisar pelo WhatsApp quando estão prontos e lembrar da renovação.
+ * registrar pedidos, avisar pelo WhatsApp quando estão prontos, lembrar da renovação e a agenda.
  * Os demais continuam no código e voltam acrescentando o nome aqui.
  */
 export const MODULOS = [
@@ -9,6 +9,7 @@ export const MODULOS = [
   "recetas",
   "ventas",
   "pedidos",
+  "agenda",
   "renovaciones",
   "inventario",
   "laboratorio",
@@ -21,7 +22,14 @@ export const MODULOS = [
 ] as const;
 export type Modulo = (typeof MODULOS)[number];
 
-export const MODULOS_ACTIVOS: readonly Modulo[] = ["pedidos", "clientes", "renovaciones", "whatsapp", "configuracion"];
+export const MODULOS_ACTIVOS: readonly Modulo[] = [
+  "pedidos",
+  "clientes",
+  "agenda",
+  "renovaciones",
+  "whatsapp",
+  "configuracion",
+];
 
 export function moduloActivo(m: Modulo): boolean {
   return MODULOS_ACTIVOS.includes(m);

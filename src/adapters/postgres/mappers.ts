@@ -1,6 +1,7 @@
+import type { Cita } from "@/domain/cita/Cita";
 import type { Cliente } from "@/domain/cliente/Cliente";
 import type { Notificacion } from "@/domain/notificacion/Notificacion";
-import type { Organizacion } from "@/domain/organizacion/Organizacion";
+import type { ModoRespuestaIA, Organizacion } from "@/domain/organizacion/Organizacion";
 import type { Pedido } from "@/domain/pedido/Pedido";
 import type { StatusPedido } from "@/domain/pedido/status-pedido";
 import type { DatosReceta, Receta } from "@/domain/receta/Receta";
@@ -188,7 +189,15 @@ export interface FilaConfiguracion {
   plantilla_listo_pt: string;
   plantilla_renovacion_es: string;
   plantilla_renovacion_pt: string;
+  plantilla_cita_es: string;
+  plantilla_cita_pt: string;
+  ia_responde: ModoRespuestaIA;
+  info_para_ia: string;
 }
+
+export const COLUMNAS_CONFIGURACION = `nombre, telefono_whatsapp, idioma_default::text as idioma_default,
+  plantilla_listo_es, plantilla_listo_pt, plantilla_renovacion_es, plantilla_renovacion_pt,
+  plantilla_cita_es, plantilla_cita_pt, ia_responde, info_para_ia`;
 
 export function aOrganizacion(f: FilaConfiguracion): Organizacion {
   return {
@@ -198,7 +207,9 @@ export function aOrganizacion(f: FilaConfiguracion): Organizacion {
     plantillas: {
       listo: { es: f.plantilla_listo_es, pt: f.plantilla_listo_pt },
       renovacion: { es: f.plantilla_renovacion_es, pt: f.plantilla_renovacion_pt },
+      cita: { es: f.plantilla_cita_es, pt: f.plantilla_cita_pt },
     },
+    bot: { responde: f.ia_responde, info: f.info_para_ia },
   };
 }
 
@@ -233,5 +244,43 @@ export function aCandidato(f: FilaCandidato): CandidatoRenovacion {
     ultimoPedidoCreadoEn: iso(f.ultimo_pedido_creado_en),
     pedidosAbiertos: Number(f.pedidos_abiertos),
     ultimoAvisoRenovacion: isoONulo(f.ultimo_aviso_renovacion),
+  };
+}
+
+export const COLUMNAS_CITA = `
+  id, cliente_id, nombre, whatsapp, jid, fecha::text as fecha, to_char(hora, 'HH24:MI') as hora,
+  motivo, preferencia, notas, estado::text as estado, origen::text as origen, created_at`;
+
+export interface FilaCita {
+  id: string;
+  cliente_id: string | null;
+  nombre: string;
+  whatsapp: string | null;
+  jid: string | null;
+  fecha: string | null;
+  hora: string | null;
+  motivo: string | null;
+  preferencia: string | null;
+  notas: string | null;
+  estado: Cita["estado"];
+  origen: Cita["origen"];
+  created_at: Instante;
+}
+
+export function aCita(f: FilaCita): Cita {
+  return {
+    id: f.id,
+    clienteId: f.cliente_id,
+    nombre: f.nombre,
+    whatsapp: f.whatsapp,
+    jid: f.jid,
+    fecha: f.fecha,
+    hora: f.hora,
+    motivo: f.motivo,
+    preferencia: f.preferencia,
+    notas: f.notas,
+    estado: f.estado,
+    origen: f.origen,
+    createdAt: iso(f.created_at),
   };
 }

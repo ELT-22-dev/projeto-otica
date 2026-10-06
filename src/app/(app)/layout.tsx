@@ -1,4 +1,5 @@
 import { LogOut } from "lucide-react";
+import { ProveedorModoWhatsapp } from "@/components/pedidos/ModoWhatsapp";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/visual";
 import { t } from "@/i18n";
@@ -25,10 +26,25 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
   }
 
   const esAdmin = contexto.usuario.rol === "admin";
-  const [porAvisar, conteos] = await Promise.all([casos.obtenerPorAvisar(), casos.contarPedidosPorStatus()]);
-  const resumen = { porAvisar: porAvisar.total, enLaboratorio: conteos.en_laboratorio, listos: conteos.listo };
-  // Número vermelho no menu: quantos clientes esperam aviso em cada seção.
-  const avisos = { "/pedidos": porAvisar.listos.length, "/renovaciones": porAvisar.renovaciones.length };
+  const [porAvisar, conteos, agenda, whatsapp] = await Promise.all([
+    casos.obtenerPorAvisar(),
+    casos.contarPedidosPorStatus(),
+    casos.resumenAgenda(),
+    casos.resumenWhatsapp(),
+  ]);
+  const resumen = {
+    porAvisar: porAvisar.total,
+    enLaboratorio: conteos.en_laboratorio,
+    listos: conteos.listo,
+    citas: agenda.hoy,
+  };
+  // Número vermelho no menu: quem espera uma ação da ótica em cada seção.
+  const avisos = {
+    "/pedidos": porAvisar.listos.length,
+    "/agenda": agenda.solicitudes,
+    "/renovaciones": porAvisar.renovaciones.length,
+    "/whatsapp": whatsapp.atencion,
+  };
 
   return (
     <div className="min-h-dvh">
@@ -57,7 +73,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
           </form>
         </header>
         <main className="mx-auto w-full max-w-xl flex-1 px-4 pt-4 pb-28 md:max-w-none md:px-6 md:py-6 lg:max-w-6xl lg:px-8 lg:py-8">
-          {children}
+          <ProveedorModoWhatsapp automatico={whatsapp.automatico}>{children}</ProveedorModoWhatsapp>
         </main>
       </div>
 

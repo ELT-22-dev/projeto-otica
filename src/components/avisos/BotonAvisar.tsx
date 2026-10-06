@@ -2,6 +2,7 @@
 
 import { MessageCircle } from "lucide-react";
 import { avisarRenovacionAccion, listoYAvisarAccion } from "@/app/(app)/acciones";
+import { useEnvioAutomatico } from "@/components/pedidos/ModoWhatsapp";
 import { useWhatsapp } from "@/components/pedidos/usarWhatsapp";
 import { Button } from "@/components/ui/button";
 import { t } from "@/i18n";
@@ -19,4 +20,9 @@ export function BotonAvisar({ tipo, id }: { tipo: "listo" | "renovacion"; id: st
       {t.porAvisar.avisar}
     </Button>
   );
+}
+
+/** Explica o que o toque faz: abre o WhatsApp (wa.me) ou envia sozinho (WhatsApp conectado). */
+export function AyudaAviso() {
+  return useEnvioAutomatico() ? t.porAvisar.ayudaAutomatico : t.porAvisar.ayuda;
 }

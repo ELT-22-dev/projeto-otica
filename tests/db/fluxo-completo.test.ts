@@ -4,7 +4,8 @@
  */
 import type { PGlite } from "@electric-sql/pglite";
 import { beforeEach, describe, expect, it } from "vitest";
-import { WaMeNotificador } from "@/adapters/notificador/WaMeNotificador";
+import { NotificadorWhatsapp } from "@/adapters/notificador/NotificadorWhatsapp";
+import { PostgresCitaRepository } from "@/adapters/postgres/PostgresCitaRepository";
 import { PostgresConsultas } from "@/adapters/postgres/PostgresConsultas";
 import { PostgresPedidoRepository } from "@/adapters/postgres/PostgresPedidoRepository";
 import {
@@ -15,7 +16,8 @@ import {
   PostgresRenovacionRepository,
   PostgresUsuarioRepository,
 } from "@/adapters/postgres/PostgresRepositorios";
-import { crearCasosDeUso } from "@/application";
+import { PostgresWhatsappRepository } from "@/adapters/postgres/PostgresWhatsappRepository";
+import { crearCasosDeUso, crearCasosDeUsoBot, type Dependencias } from "@/application";
 import type { UsuarioActual } from "@/domain/usuario/Usuario";
 import { sembrarDemo } from "../../scripts/datos-demo";
 import { crearBaseDeDatos, sqlDe } from "./pglite";
@@ -24,11 +26,22 @@ const AHORA = new Date("2026-10-05T15:00:00.000Z");
 const HOY = "2026-10-05";
 
 let db: PGlite;
+let estadoServicio: Awaited<ReturnType<Dependencias["servicioWhatsapp"]["estado"]>> = null;
 let usuario: UsuarioActual;
 
-function casos(u: UsuarioActual | null = usuario) {
+function dependencias(u: UsuarioActual | null = usuario, asistente: Dependencias["asistente"] = null): Dependencias {
   const sql = sqlDe(db);
-  return crearCasosDeUso({
+  const reloj = { ahora: () => AHORA };
+  const whatsapp = new PostgresWhatsappRepository(sql);
+  // Serviço do WhatsApp simulado: grava na fila do banco como o worker faz.
+  const servicio: Dependencias["servicioWhatsapp"] = {
+    estado: async () => estadoServicio,
+    conectar: async () => {},
+    desconectar: async () => {},
+    enviar: (m) =>
+      whatsapp.registrarMensaje({ ...m, direccion: "saliente", origen: "aviso", estado: "pendiente", nombre: null }),
+  };
+  return {
     clientes: new PostgresClienteRepository(sql),
     pedidos: new PostgresPedidoRepository(sql),
     recetas: new PostgresRecetaRepository(sql),
@@ -36,17 +49,25 @@ function casos(u: UsuarioActual | null = usuario) {
     renovaciones: new PostgresRenovacionRepository(sql),
     organizacion: new PostgresOrganizacionRepository(sql),
     sesion: { usuarioActual: async () => u },
-    notificador: new WaMeNotificador(),
-    reloj: { ahora: () => AHORA },
+    notificador: new NotificadorWhatsapp(servicio),
+    reloj,
     consultas: new PostgresConsultas(sql),
     usuarios: new PostgresUsuarioRepository(sql),
     hasher: { hash: async (c) => `h:${c}` },
+    citas: new PostgresCitaRepository(sql),
+    whatsapp,
+    servicioWhatsapp: servicio,
     lectorReceta: null,
-    asistente: null,
-  });
+    asistente,
+  };
+}
+
+function casos(u: UsuarioActual | null = usuario) {
+  return crearCasosDeUso(dependencias(u));
 }
 
 beforeEach(async () => {
+  estadoServicio = null;
   db = await crearBaseDeDatos();
   const q = async <T>(texto: string, params?: unknown[]) => (await db.query<T>(texto, params)).rows;
   await sembrarDemo(q, {
@@ -163,6 +184,10 @@ describe("configuração", () => {
       plantillaListoPt: "Olá {nombre}",
       plantillaRenovacionEs: "Hola {nombre}",
       plantillaRenovacionPt: "Olá {nombre}",
+      plantillaCitaEs: "Hola {nombre}, {fecha} {hora}",
+      plantillaCitaPt: "Olá {nombre}, {fecha} {hora}",
+      iaResponde: "clientes",
+      infoParaIa: "",
     });
     const [miguel] = await casos().listarPedidos({ busqueda: "miguel" });
     const r = await casos().listoYAvisar(miguel!.id);
@@ -299,5 +324,87 @@ describe("sinal de 'para avisar'", () => {
     const [diego] = await c.listarPedidos({ busqueda: "diego" });
     await c.marcarComoListo(diego!.id);
     expect((await c.obtenerPorAvisar()).listos.map((p) => p.cliente.nombre)).toContain("Diego Flores");
+  });
+});
+
+describe("agenda e WhatsApp no banco", () => {
+  const JID = "5511900000102@s.whatsapp.net";
+
+  it("cita: cria, aparece no dia, remarca e é atendida", async () => {
+    const c = casos();
+    const [rosa] = await c.buscarClientes("rosa");
+    const { id } = await c.crearCita({
+      cliente: { tipo: "existente", id: rosa!.id },
+      fecha: HOY,
+      hora: "16:30",
+      motivo: "Examen",
+      avisar: false,
+    });
+    let agenda = await c.obtenerAgenda();
+    expect(agenda.citasHoy).toBe(1);
+    expect(agenda.dias).toMatchObject([{ fecha: HOY, citas: [{ id, hora: "16:30", nombre: "Rosa Gutiérrez" }] }]);
+
+    const r = await c.confirmarCita({ id, fecha: "2026-10-08", hora: "09:00" });
+    expect(r.envio?.tipo).toBe("requiere_accion");
+    agenda = await c.obtenerAgenda();
+    expect(agenda.dias).toMatchObject([{ fecha: "2026-10-08", citas: [{ id, hora: "09:00" }] }]);
+    const ficha = await c.obtenerFichaCliente(rosa!.id);
+    expect(ficha?.notificaciones.map((n) => n.tipo)).toContain("cita");
+
+    await c.cambiarEstadoCita({ id, estado: "atendida" });
+    await expect(c.cambiarEstadoCita({ id, estado: "cancelada" })).rejects.toThrow("transicion_invalida");
+  });
+
+  it("serviço no ar e celular vinculado: aviso vai para o serviço em vez do wa.me", async () => {
+    estadoServicio = { estado: "conectado", qr: null, numero: "5511900000000", nombre: null };
+    const c = casos();
+    const [miguel] = await c.listarPedidos({ busqueda: "miguel" });
+    const r = await c.listoYAvisar(miguel!.id);
+    expect(r.tipo).toBe("enviado");
+
+    const { rows } = await db.query<{ estado: string; origen: string; whatsapp: string }>(
+      "select estado::text as estado, origen::text as origen, whatsapp from mensajes_whatsapp",
+    );
+    expect(rows).toEqual([{ estado: "pendiente", origen: "aviso", whatsapp: miguel!.cliente.whatsapp }]);
+    expect((await casos().obtenerPorAvisar()).listos.map((p) => p.cliente.nombre)).not.toContain("Miguel Choque");
+    expect((await casos().resumenWhatsapp()).automatico).toBe(true);
+
+    // Serviço desligou: volta para o wa.me.
+    estadoServicio = null;
+    const [patricia] = await c.listarPedidos({ busqueda: "patricia" });
+    expect((await casos().listoYAvisar(patricia!.id)).tipo).toBe("requiere_accion");
+  });
+
+  it("bot: guarda a conversa, cria solicitação de cita e marca para a equipe", async () => {
+    const deps = dependencias(usuario, {
+      async responder({ herramientas }) {
+        await herramientas
+          .find((h) => h.nombre === "solicitar_cita")!
+          .ejecutar({
+            preferencia: "jueves a la tarde",
+            motivo: "examen de vista",
+          });
+        const pedidos = await herramientas.find((h) => h.nombre === "estado_de_mis_pedidos")!.ejecutar({});
+        expect(pedidos).toMatchObject({ encontrado: true, clientes: ["Rosa Gutiérrez"] });
+        await herramientas.find((h) => h.nombre === "avisar_al_equipo")!.ejecutar({ motivo: "pide precio" });
+        return "Listo, el equipo te confirma.";
+      },
+    });
+    const bot = crearCasosDeUsoBot(deps);
+    const chat = { jid: JID, whatsapp: "5511900000102", nombre: "Rosa" };
+    await bot.registrarMensajeCliente({ ...chat, texto: "quiero un examen el jueves", idExterno: "ABC1" });
+    expect(await bot.responderConversacion(chat)).toEqual({ respondido: true, texto: "Listo, el equipo te confirma." });
+
+    const c = casos();
+    expect(await c.resumenAgenda()).toEqual({ solicitudes: 1, hoy: 0 });
+    const [conversacion] = await c.listarConversaciones();
+    expect(conversacion).toMatchObject({ jid: JID, nombre: "Rosa Gutiérrez", requiereAtencion: true });
+    expect(conversacion!.mensajes.map((m) => [m.origen, m.estado])).toEqual([
+      ["cliente", "recibido"],
+      ["ia", "pendiente"],
+    ]);
+    expect(await deps.whatsapp.existeIdExterno("ABC1")).toBe(true);
+    await c.marcarConversacionAtendida(JID);
+    expect((await c.resumenWhatsapp()).atencion).toBe(0);
   });
 });
