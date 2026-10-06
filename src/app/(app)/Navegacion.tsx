@@ -36,6 +36,40 @@ interface Props {
   usuario: string;
   /** Clientes esperando aviso, por seção (ex.: "/pedidos": 2). */
   avisos?: Record<string, number>;
+  /** Números do dia para o quadro "Hoy" da barra lateral (desktop). */
+  resumen?: { porAvisar: number; enLaboratorio: number; listos: number };
+}
+
+function CuadroHoy({ resumen }: { resumen: NonNullable<Props["resumen"]> }) {
+  const filas = [
+    { etiqueta: t.hoy.paraAvisar, valor: resumen.porAvisar, href: "/pedidos", punto: "bg-red-500" },
+    {
+      etiqueta: t.hoy.enLaboratorio,
+      valor: resumen.enLaboratorio,
+      href: "/pedidos?estado=en_laboratorio",
+      punto: "bg-amber-400",
+    },
+    { etiqueta: t.hoy.listos, valor: resumen.listos, href: "/pedidos?estado=listo", punto: "bg-emerald-500" },
+  ];
+  return (
+    <div className="mx-3 mb-3 hidden rounded-2xl bg-linear-to-br from-violet-50 to-fuchsia-50 p-3 ring-1 ring-violet-100 lg:block">
+      <p className="mb-1.5 px-1 text-xs font-semibold tracking-wide text-violet-700 uppercase">{t.hoy.titulo}</p>
+      <ul className="flex flex-col">
+        {filas.map((f) => (
+          <li key={f.etiqueta}>
+            <Link
+              href={f.href}
+              className="flex items-center gap-2 rounded-lg px-1 py-1.5 text-sm text-foreground/80 hover:bg-white/70"
+            >
+              <span className={cn("size-2 rounded-full", f.punto)} />
+              <span className="flex-1">{f.etiqueta}</span>
+              <span className="font-semibold tabular-nums">{f.valor}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
 /** Sinal vermelho com quantos clientes esperam aviso. */
@@ -188,11 +222,20 @@ const ITEMS: Item[] = [
   },
 ];
 
+/** O fluxo do dia vem primeiro: pedidos, renovações e avisos; o resto segue a ordem do menu completo. */
+const PRIMEIROS = ["/inicio", "/pedidos", "/renovaciones", "/whatsapp"];
+const prioridad = (href: string) => {
+  const i = PRIMEIROS.indexOf(href);
+  return i >= 0 ? i - PRIMEIROS.length : ITEMS.findIndex((x) => x.href === href);
+};
+
 function useNavegacion(esAdmin: boolean) {
   const ruta = usePathname();
   const activo = (href: string) =>
     href === "/pedidos" ? ruta.startsWith("/pedidos") && ruta !== "/pedidos/nuevo" : ruta.startsWith(href);
-  const items = ITEMS.filter((i) => moduloActivo(i.href.slice(1) as Modulo) && (!i.soloAdmin || esAdmin));
+  const items = ITEMS.filter((i) => moduloActivo(i.href.slice(1) as Modulo) && (!i.soloAdmin || esAdmin)).sort(
+    (a, b) => prioridad(a.href) - prioridad(b.href),
+  );
   return { ruta, activo, items };
 }
 
@@ -233,7 +276,7 @@ function EtiquetaPronto({ className }: { className?: string }) {
  * Tablet (md): trilho estreito com ícones e rótulos curtos.
  * Desktop (lg): barra completa com nome da ótica e usuário.
  */
-export function BarraLateral({ esAdmin, optica, usuario, avisos = {} }: Props) {
+export function BarraLateral({ esAdmin, optica, usuario, avisos = {}, resumen }: Props) {
   const { ruta, activo, items } = useNavegacion(esAdmin);
 
   return (
@@ -288,6 +331,8 @@ export function BarraLateral({ esAdmin, optica, usuario, avisos = {} }: Props) {
         ))}
       </nav>
 
+      {resumen && <CuadroHoy resumen={resumen} />}
+
       <div className="flex w-full flex-col items-center gap-2 border-t py-3 lg:flex-row lg:px-4">
         <span
           title={usuario}
@@ -311,7 +356,7 @@ export function BarraLateral({ esAdmin, optica, usuario, avisos = {} }: Props) {
   );
 }
 
-const EN_BARRA_CELULAR = ["/inicio", "/pedidos", "/clientes"];
+const EN_BARRA_CELULAR = ["/pedidos", "/renovaciones", "/whatsapp"];
 
 /**
  * Celular (< md). Com até 4 módulos: todos na barra, com Nuevo no centro.

@@ -25,7 +25,8 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
   }
 
   const esAdmin = contexto.usuario.rol === "admin";
-  const porAvisar = await casos.obtenerPorAvisar();
+  const [porAvisar, conteos] = await Promise.all([casos.obtenerPorAvisar(), casos.contarPedidosPorStatus()]);
+  const resumen = { porAvisar: porAvisar.total, enLaboratorio: conteos.en_laboratorio, listos: conteos.listo };
   // Número vermelho no menu: quantos clientes esperam aviso em cada seção.
   const avisos = { "/pedidos": porAvisar.listos.length, "/renovaciones": porAvisar.renovaciones.length };
 
@@ -36,6 +37,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
         optica={contexto.organizacion.nombre}
         usuario={contexto.usuario.nombre}
         avisos={avisos}
+        resumen={resumen}
       />
 
       <div className="flex min-h-dvh flex-col md:pl-20 lg:pl-64">

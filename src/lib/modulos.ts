@@ -21,7 +21,7 @@ export const MODULOS = [
 ] as const;
 export type Modulo = (typeof MODULOS)[number];
 
-export const MODULOS_ACTIVOS: readonly Modulo[] = ["pedidos", "renovaciones", "configuracion"];
+export const MODULOS_ACTIVOS: readonly Modulo[] = ["pedidos", "clientes", "renovaciones", "whatsapp", "configuracion"];
 
 export function moduloActivo(m: Modulo): boolean {
   return MODULOS_ACTIVOS.includes(m);

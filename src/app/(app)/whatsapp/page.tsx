@@ -1,19 +1,21 @@
-import { BellRing, ChevronRight, MessageCircle, RefreshCcw, Send } from "lucide-react";
+import { CheckCircle2, MessageCircle, Send } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { EncabezadoPagina, ListaPedidosMini } from "@/components/gestion";
+import { exigirModulo } from "@/app/_lib/exigir-modulo";
+import { PanelPorAvisar } from "@/components/avisos/PanelPorAvisar";
+import { EncabezadoPagina } from "@/components/gestion";
 import { Avatar, TituloSeccion } from "@/components/visual";
 import { formatearNumeroPedido } from "@/domain/pedido/numero-pedido";
 import { t } from "@/i18n";
 import { casosDeUso } from "@/infra/container";
 import { formatearInstante } from "@/lib/format";
-import { exigirModulo } from "@/app/_lib/exigir-modulo";
 
 export const metadata: Metadata = { title: t.crm.titulo };
 
-export default async function PaginaCrm() {
+export default async function PaginaAvisos() {
   exigirModulo("whatsapp");
-  const crm = await (await casosDeUso()).obtenerCrm();
+  const casos = await casosDeUso();
+  const [crm, porAvisar] = await Promise.all([casos.obtenerCrm(), casos.obtenerPorAvisar()]);
 
   return (
     <div className="flex flex-col gap-5 lg:gap-6">
@@ -23,30 +25,22 @@ export default async function PaginaCrm() {
         titulo={t.crm.titulo}
         descripcion={t.crm.descripcion}
         extra={
-          <div className="flex flex-wrap gap-2 text-sm">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1.5 text-green-700 ring-1 ring-green-200">
-              <Send className="size-4" />
-              {t.crm.avisosHoy(crm.avisosHoy)}
-            </span>
-            <Link
-              href="/renovaciones"
-              className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-3 py-1.5 text-rose-700 ring-1 ring-rose-200 hover:bg-rose-100"
-            >
-              <RefreshCcw className="size-4" />
-              {t.crm.renovaciones(crm.renovacionesPendientes)}
-              <ChevronRight className="size-3.5" />
-            </Link>
-          </div>
+          <span className="inline-flex items-center gap-1.5 self-start rounded-full bg-green-50 px-3 py-1.5 text-sm text-green-700 ring-1 ring-green-200">
+            <Send className="size-4" />
+            {t.crm.avisosHoy(crm.avisosHoy)}
+          </span>
         }
       />
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
-        <section className="flex flex-col gap-3">
-          <TituloSeccion icono={BellRing} tono="esmeralda">
-            {t.crm.sinAviso} ({crm.listosSinAviso.length})
-          </TituloSeccion>
-          <ListaPedidosMini pedidos={crm.listosSinAviso} hoy={crm.hoy} vacio={t.crm.todosAvisados} mostrar="listo" />
-        </section>
+      <div className="grid gap-6 lg:grid-cols-[1fr_1fr] lg:items-start">
+        {porAvisar.total > 0 ? (
+          <PanelPorAvisar datos={porAvisar} hoy={crm.hoy} />
+        ) : (
+          <div className="flex items-center gap-3 rounded-3xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-800">
+            <CheckCircle2 className="size-6 shrink-0" />
+            <p className="font-medium">{t.inicio.todoAlDia}</p>
+          </div>
+        )}
 
         <section className="flex flex-col gap-3">
           <TituloSeccion icono={MessageCircle} tono="verde">

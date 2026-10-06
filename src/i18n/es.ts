@@ -24,7 +24,7 @@ export const es = {
     inventario: "Inventario",
     laboratorio: "Laboratorio",
     finanzas: "Finanzas",
-    crm: "WhatsApp / CRM",
+    crm: "Avisos WhatsApp",
     reportes: "Reportes",
     asistente: "IA",
     usuarios: "Usuarios",
@@ -198,6 +198,12 @@ export const es = {
       "¿A quién conviene avisar para renovar?",
     ],
   },
+  hoy: {
+    titulo: "Hoy",
+    paraAvisar: "Para avisar",
+    enLaboratorio: "En laboratorio",
+    listos: "Listos para retirar",
+  },
   porAvisar: {
     titulo: "Para avisar",
     resumen: (n: number) => (n === 1 ? "1 cliente espera tu aviso" : `${n} clientes esperan tu aviso`),
@@ -258,8 +264,8 @@ export const es = {
     vacio: "No hay saldos pendientes.",
   },
   crm: {
-    titulo: "WhatsApp / CRM",
-    descripcion: "Avisos a clientes y el historial de mensajes.",
+    titulo: "Avisos por WhatsApp",
+    descripcion: "Quién falta avisar y los mensajes que ya se enviaron.",
     sinAviso: "Listos, falta avisar",
     renovaciones: (n: number) => (n === 1 ? "1 cliente para renovar" : `${n} clientes para renovar`),
     verRenovaciones: "Ver renovaciones",
