@@ -108,6 +108,7 @@ export function herramientasAsistente(deps: Pick<DepsAsistente, "pedidos" | "ren
         const candidatos = await deps.renovaciones.listarCandidatos(ventanaRenovacion(h));
         return candidatos
           .filter((c) => esElegibleRenovacion(c, h))
+          .sort((a, b) => Date.parse(a.ultimaEntrega) - Date.parse(b.ultimaEntrega))
           .map((c) => ({
             cliente: c.nombre,
             ultima_entrega: fechaLocal(c.ultimaEntrega),
