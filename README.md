@@ -103,7 +103,22 @@ npm run typecheck
 
 ---
 
-## Deploy na Vercel
+## Produção
+
+- **App:** https://projeto-otica-psi.vercel.app (projeto `projeto-otica` no time EDLT24 da Vercel)
+- **Banco:** Neon `otica-latina-db`, região São Paulo, ligado ao projeto pela integração da Vercel
+- **Deploy:** automático a cada `git push` na `main`
+
+Rodar migrations / seed / usuários contra o banco de produção:
+```bash
+npx vercel env pull .env.neon.local --environment=production   # credenciais (arquivo ignorado pelo git)
+npx tsx --env-file=.env.neon.local scripts/migrar.ts --listar
+npx tsx --env-file=.env.neon.local scripts/migrar.ts
+npx tsx --env-file=.env.neon.local scripts/crear-usuario.ts nataly@email.com "Nataly" atendente
+rm .env.neon.local                                              # não deixar credenciais no disco
+```
+
+## Deploy na Vercel (do zero)
 
 1. Suba o repositório para o GitHub e importe na Vercel (**New Project**).
 2. **Settings → Environment Variables** (Production e Preview):
