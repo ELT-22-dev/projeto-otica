@@ -55,6 +55,12 @@ export function sumarDias(fecha: FechaISO, dias: number): FechaISO {
   return formatear(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
 }
 
+/** Primeiro dia do mês: 2026-10-05 → 2026-10-01. */
+export function inicioDeMes(fecha: FechaISO): FechaISO {
+  partes(fecha);
+  return `${fecha.slice(0, 7)}-01`;
+}
+
 /** Meses completos de `desde` até `hasta` (05/01 → 04/02 = 0; 05/01 → 05/02 = 1). */
 export function mesesCompletosEntre(desde: FechaISO, hasta: FechaISO): number {
   const [a1, m1, d1] = partes(desde);

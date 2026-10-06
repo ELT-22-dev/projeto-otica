@@ -5,6 +5,7 @@
 import type { PGlite } from "@electric-sql/pglite";
 import { beforeEach, describe, expect, it } from "vitest";
 import { WaMeNotificador } from "@/adapters/notificador/WaMeNotificador";
+import { PostgresConsultas } from "@/adapters/postgres/PostgresConsultas";
 import { PostgresPedidoRepository } from "@/adapters/postgres/PostgresPedidoRepository";
 import {
   PostgresClienteRepository,
@@ -37,6 +38,9 @@ function casos(u: UsuarioActual | null = usuario) {
     sesion: { usuarioActual: async () => u },
     notificador: new WaMeNotificador(),
     reloj: { ahora: () => AHORA },
+    consultas: new PostgresConsultas(sql),
+    usuarios: new PostgresUsuarioRepository(sql),
+    hasher: { hash: async (c) => `h:${c}` },
     lectorReceta: null,
     asistente: null,
   });
@@ -206,5 +210,69 @@ describe("ferramentas do assistente com dados reais", () => {
     const lucia = (await ejecutar("buscar_pedidos", { texto: "lucia" })) as unknown as Record<string, unknown>[];
     const campos = Object.keys(lucia[0]!).join(",");
     expect(campos).not.toMatch(/esfera|cilindro|eje|adicion|dnp|receta/i);
+  });
+});
+
+describe("módulos de gestão com dados reais", () => {
+  const admin = () => casos({ ...usuario, rol: "admin" });
+
+  it("inicio: atrasados, entregas de hoje, sem aviso, a cobrar e renovações", async () => {
+    const p = await casos().obtenerPanel();
+    expect(p.atrasados.map((x) => x.cliente.nombre)).toEqual(["Diego Flores"]);
+    expect(p.listosSinAviso.map((x) => x.cliente.nombre).sort()).toEqual(["Miguel Choque", "Patrícia Rocha"]);
+    expect(p.porCobrar).toBe(156000);
+    expect(p.renovacionesPendientes).toBe(2);
+    expect(p.clientes).toBe(9);
+    // Outubro/2026: Lucía (03/10) é o único pedido criado no mês
+    expect(p.ventasMes).toMatchObject({ mes: "2026-10", pedidos: 1, total: 45000 });
+  });
+
+  it("aviso enviado tira o pedido da lista de 'sem aviso'", async () => {
+    const [miguel] = await casos().listarPedidos({ busqueda: "miguel" });
+    await casos().listoYAvisar(miguel!.id);
+    const crm = await casos().obtenerCrm();
+    expect(crm.listosSinAviso.map((x) => x.cliente.nombre)).toEqual(["Patrícia Rocha"]);
+    expect(crm.avisos[0]).toMatchObject({ clienteNombre: "Miguel Choque", tipo: "listo", pedidoNumero: 9 });
+    expect(crm.avisosHoy).toBe(1);
+  });
+
+  it("laboratório agrupa por urgência", async () => {
+    const l = await casos().obtenerLaboratorio();
+    expect(l.grupos.atrasados.map((x) => x.cliente.nombre)).toEqual(["Diego Flores"]);
+    expect(l.grupos.semana.map((x) => x.cliente.nombre)).toEqual(["Lucía Vargas"]);
+    expect(l.total).toBe(2);
+  });
+
+  it("finanças e relatórios (só admin)", async () => {
+    await expect(casos().obtenerFinanzas()).rejects.toThrow("no_autorizado");
+    const fin = await admin().obtenerFinanzas();
+    expect(fin.porCobrar).toBe(156000);
+    expect(fin.pendientes[0]!.cliente.nombre).toBe("Diego Flores"); // maior saldo: R$ 560
+    expect(fin.adelantosMes).toBe(15000);
+
+    const rep = await admin().obtenerReportes();
+    expect(rep.meses).toHaveLength(6);
+    expect(rep.meses.at(-1)!.mes).toBe("2026-10");
+    expect(rep.porTipo.length).toBeGreaterThan(0);
+  });
+
+  it("clientes e receitas", async () => {
+    const todos = await casos().listarClientes("");
+    expect(todos).toHaveLength(9);
+    expect(todos.find((c) => c.nombre === "Ana Torres")?.pedidos).toBe(2);
+    expect((await casos().listarClientes("gutierrez")).map((c) => c.nombre)).toEqual(["Rosa Gutiérrez"]);
+    expect(await casos().listarClientes("900000104")).toHaveLength(1);
+    const recetas = await casos().listarRecetas();
+    expect(recetas.map((r) => r.clienteNombre).sort()).toEqual(["Carlos Mamani", "Lucía Vargas"]);
+  });
+
+  it("usuários no banco: lista, cria e protege o último admin", async () => {
+    const a = admin();
+    const lista = await a.listarUsuarios();
+    expect(lista.map((u) => u.email).sort()).toEqual(["admin@optica.com", "nataly@optica.com"]);
+    await a.crearUsuario({ email: "nuevo@optica.com", nombre: "Nuevo", rol: "atendente", contrasena: "segura123" });
+    expect(await a.listarUsuarios()).toHaveLength(3);
+    const eddy = lista.find((u) => u.rol === "admin")!;
+    await expect(a.actualizarUsuario({ id: eddy.id, rol: "atendente" })).rejects.toThrow("operacion_no_permitida");
   });
 });

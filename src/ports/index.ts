@@ -6,8 +6,9 @@ import type { CambioStatus, DatosNuevoPedido, Pedido } from "@/domain/pedido/Ped
 import type { StatusPedido } from "@/domain/pedido/status-pedido";
 import type { DatosReceta, Receta } from "@/domain/receta/Receta";
 import type { CandidatoRenovacion, VentanaRenovacion } from "@/domain/renovacion/regla-renovacion";
+import type { FechaISO } from "@/domain/shared/fecha";
 import type { Idioma } from "@/domain/shared/idioma";
-import type { UsuarioActual } from "@/domain/usuario/Usuario";
+import type { Rol, UsuarioActual } from "@/domain/usuario/Usuario";
 
 /** Pedido com os dados do cliente que as telas e os avisos precisam. */
 export interface PedidoConCliente extends Pedido {
@@ -146,4 +147,76 @@ export interface AsistentePort {
     pregunta: string;
     herramientas: HerramientaAsistente[];
   }): Promise<string>;
+}
+
+// Consultas de gestão (dashboard, finanças, relatórios, CRM) --------------------
+
+export interface ClienteResumen {
+  id: string;
+  nombre: string;
+  whatsapp: WhatsappE164;
+  idioma: Idioma;
+  pedidos: number;
+  ultimoPedido: string | null;
+}
+
+export interface RecetaConCliente extends Receta {
+  clienteNombre: string;
+}
+
+export interface AvisoConCliente extends Notificacion {
+  clienteNombre: string;
+  pedidoNumero: number | null;
+}
+
+export interface VentasMes {
+  /** AAAA-MM */
+  mes: string;
+  pedidos: number;
+  total: number;
+  adelantos: number;
+}
+
+export interface VentasPorTipoLente {
+  tipo: string | null;
+  pedidos: number;
+  total: number;
+}
+
+/** Agregações somente leitura sobre pedidos, avisos e receitas. Valores em centavos. */
+export interface ConsultasRepository {
+  listarClientes(filtro: { nombre?: string; telefono?: string; limite: number }): Promise<ClienteResumen[]>;
+  contarClientes(): Promise<number>;
+  recetasRecientes(limite: number): Promise<RecetaConCliente[]>;
+  avisosRecientes(limite: number): Promise<AvisoConCliente[]>;
+  listosSinAviso(): Promise<PedidoConCliente[]>;
+  /** Pedidos não cancelados, agrupados pelo mês da data do pedido, a partir de `desde`. */
+  ventasPorMes(desde: FechaISO): Promise<VentasMes[]>;
+  ventasPorTipoLente(desde: FechaISO): Promise<VentasPorTipoLente[]>;
+  /** Saldo dos pedidos entregues no período (datas locais, inclusive): cobrado na retirada. */
+  saldoCobradoAlEntregar(desde: FechaISO, hasta: FechaISO): Promise<number>;
+  avisosEnviadosDesde(desde: FechaISO): Promise<number>;
+}
+
+// Usuários ------------------------------------------------------------------
+
+export interface UsuarioListado {
+  id: string;
+  email: string;
+  nombre: string;
+  rol: Rol;
+  activo: boolean;
+  createdAt: string;
+}
+
+export interface UsuarioRepository {
+  listar(): Promise<UsuarioListado[]>;
+  existeEmail(email: string): Promise<boolean>;
+  crear(u: { email: string; nombre: string; rol: Rol; passwordHash: string }): Promise<string>;
+  actualizar(id: string, cambios: { rol?: Rol; activo?: boolean; passwordHash?: string }): Promise<boolean>;
+  contarAdminsActivos(): Promise<number>;
+}
+
+export interface HasherPort {
+  hash(contrasena: string): Promise<string>;
 }

@@ -1,6 +1,16 @@
 import { avisarRenovacion, generarAvisoCliente, listoYAvisar } from "./avisos/avisos";
 import { buscarClientes, obtenerFichaCliente } from "./clientes/clientes";
 import type { Dependencias } from "./dependencias";
+import {
+  listarClientes,
+  listarRecetas,
+  obtenerCrm,
+  obtenerFinanzas,
+  obtenerLaboratorio,
+  obtenerPanel,
+  obtenerReportes,
+} from "./gestion/gestion";
+import { actualizarUsuario, crearUsuario, listarUsuarios, restablecerContrasena } from "./usuarios/usuarios";
 import { preguntarAsistente } from "./ia/asistente";
 import { leerRecetaDeFoto } from "./ia/leerReceta";
 import { actualizarConfiguracion, obtenerConfiguracion, obtenerContexto } from "./organizacion/organizacion";
@@ -29,6 +39,17 @@ export function crearCasosDeUso(deps: Dependencias) {
     actualizarConfiguracion: actualizarConfiguracion(deps),
     leerRecetaDeFoto: leerRecetaDeFoto(deps),
     preguntarAsistente: preguntarAsistente(deps),
+    obtenerPanel: obtenerPanel(deps),
+    listarClientes: listarClientes(deps),
+    listarRecetas: listarRecetas(deps),
+    obtenerLaboratorio: obtenerLaboratorio(deps),
+    obtenerFinanzas: obtenerFinanzas(deps),
+    obtenerCrm: obtenerCrm(deps),
+    obtenerReportes: obtenerReportes(deps),
+    listarUsuarios: listarUsuarios(deps),
+    crearUsuario: crearUsuario(deps),
+    actualizarUsuario: actualizarUsuario(deps),
+    restablecerContrasena: restablecerContrasena(deps),
     iaDisponible: deps.lectorReceta !== null && deps.asistente !== null,
   };
 }
@@ -37,4 +58,13 @@ export type CasosDeUso = ReturnType<typeof crearCasosDeUso>;
 export type { Dependencias } from "./dependencias";
 export type { ClienteParaRenovar } from "./renovaciones/listarRenovaciones";
 export type { EntradaConfiguracion, EntradaCrearPedido } from "./esquemas";
-export type { MensajeAsistente, PedidoConCliente, ResultadoEnvio } from "@/ports";
+export type {
+  AvisoConCliente,
+  ClienteResumen,
+  MensajeAsistente,
+  PedidoConCliente,
+  RecetaConCliente,
+  ResultadoEnvio,
+  UsuarioListado,
+  VentasMes,
+} from "@/ports";

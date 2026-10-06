@@ -6,7 +6,13 @@ import type { Pedido } from "@/domain/pedido/Pedido";
 import type { CandidatoRenovacion } from "@/domain/renovacion/regla-renovacion";
 import type { UsuarioActual } from "@/domain/usuario/Usuario";
 import { WaMeNotificador } from "@/adapters/notificador/WaMeNotificador";
-import type { HerramientaAsistente, LecturaReceta, PedidoConCliente, RegistroPedido } from "@/ports";
+import type {
+  HerramientaAsistente,
+  LecturaReceta,
+  PedidoConCliente,
+  RegistroPedido,
+  UsuarioListado,
+} from "@/ports";
 
 export const ORG: Organizacion = {
   nombre: "Óticas Latina",
@@ -24,8 +30,8 @@ export const ORG: Organizacion = {
   },
 };
 
-export const ATENDENTE: UsuarioActual = { id: "u-1", nombre: "Nataly", rol: "atendente" };
-export const ADMIN: UsuarioActual = { ...ATENDENTE, id: "u-2", rol: "admin" };
+export const ATENDENTE: UsuarioActual = { id: "00000000-0000-4000-8000-0000000000a1", nombre: "Nataly", rol: "atendente" };
+export const ADMIN: UsuarioActual = { ...ATENDENTE, id: "00000000-0000-4000-8000-0000000000a2", nombre: "Eddy", rol: "admin" };
 
 let secuencia = 0;
 const uuid = () => `00000000-0000-4000-8000-${String(++secuencia).padStart(12, "0")}`;
@@ -38,6 +44,10 @@ export function crearFakes(
   const notificaciones: NuevaNotificacion[] = [];
   const registros: RegistroPedido[] = [];
   const candidatos: CandidatoRenovacion[] = [];
+  const usuarios: (UsuarioListado & { passwordHash: string })[] = [
+    { ...ADMIN, email: "admin@x.com", activo: true, createdAt: "2026-01-01T00:00:00.000Z", passwordHash: "h:x" },
+    { ...ATENDENTE, email: "nataly@x.com", activo: true, createdAt: "2026-01-01T00:00:00.000Z", passwordHash: "h:x" },
+  ];
   const asistente: { herramientas: HerramientaAsistente[]; instrucciones: string; pregunta: string } = {
     herramientas: [],
     instrucciones: "",
@@ -139,6 +149,34 @@ export function crearFakes(
     },
     notificador: new WaMeNotificador(),
     reloj: { ahora: () => opciones.ahora ?? new Date("2026-10-05T15:00:00.000Z") },
+    consultas: {
+      listarClientes: async () => [],
+      contarClientes: async () => clientes.size,
+      recetasRecientes: async () => [],
+      avisosRecientes: async () => [],
+      listosSinAviso: async () => [],
+      ventasPorMes: async () => [],
+      ventasPorTipoLente: async () => [],
+      saldoCobradoAlEntregar: async () => 0,
+      avisosEnviadosDesde: async () => notificaciones.length,
+    },
+    usuarios: {
+      listar: async () => usuarios.map((u) => ({ id: u.id, email: u.email, nombre: u.nombre, rol: u.rol, activo: u.activo, createdAt: u.createdAt })),
+      existeEmail: async (email) => usuarios.some((u) => u.email === email.toLowerCase()),
+      async crear(u) {
+        const id = uuid();
+        usuarios.push({ ...u, id, activo: true, createdAt: new Date().toISOString() });
+        return id;
+      },
+      async actualizar(id, c) {
+        const u = usuarios.find((x) => x.id === id);
+        if (!u) return false;
+        Object.assign(u, Object.fromEntries(Object.entries(c).filter(([, v]) => v !== undefined)));
+        return true;
+      },
+      contarAdminsActivos: async () => usuarios.filter((u) => u.rol === "admin" && u.activo).length,
+    },
+    hasher: { hash: async (c) => `h:${c}` },
     lectorReceta: opciones.sinIA
       ? null
       : {
@@ -172,6 +210,7 @@ export function crearFakes(
     registros,
     candidatos,
     asistente,
+    usuarios,
     get org() {
       return org;
     },

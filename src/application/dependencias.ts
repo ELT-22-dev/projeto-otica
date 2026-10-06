@@ -3,6 +3,8 @@ import { esAdmin, type UsuarioActual } from "@/domain/usuario/Usuario";
 import type {
   AsistentePort,
   ClienteRepository,
+  ConsultasRepository,
+  HasherPort,
   LectorRecetaPort,
   NotificacionRepository,
   NotificadorPort,
@@ -12,6 +14,7 @@ import type {
   Reloj,
   RenovacionRepository,
   SesionPort,
+  UsuarioRepository,
 } from "@/ports";
 
 export interface Dependencias {
@@ -24,6 +27,9 @@ export interface Dependencias {
   sesion: SesionPort;
   notificador: NotificadorPort;
   reloj: Reloj;
+  consultas: ConsultasRepository;
+  usuarios: UsuarioRepository;
+  hasher: HasherPort;
   /** null quando não há chave de IA configurada: as funções de IA ficam desligadas. */
   lectorReceta: LectorRecetaPort | null;
   asistente: AsistentePort | null;

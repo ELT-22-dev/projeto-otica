@@ -218,6 +218,9 @@ export const es = {
     ia_no_disponible: "La inteligencia artificial no está disponible ahora. Intenta más tarde.",
     imagen_invalida: "No pudimos procesar la foto. Prueba con otra.",
     receta_no_legible: "No pudimos leer la receta. Toma la foto de frente, con buena luz.",
+    email_en_uso: "Ya existe un usuario con ese correo.",
+    contrasena_corta: "La contraseña debe tener al menos 8 caracteres.",
+    operacion_no_permitida: "No se puede: la óptica necesita al menos un administrador activo y no puedes desactivarte a ti mismo.",
   } satisfies Record<CodigoErrorDominio, string>,
   validacion: {
     requerido: "Campo obligatorio",

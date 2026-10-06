@@ -11,8 +11,11 @@ import type {
   OrganizacionRepository,
   RecetaRepository,
   RenovacionRepository,
+  UsuarioListado,
+  UsuarioRepository,
 } from "@/ports";
 import {
+  iso,
   aCandidato,
   aCliente,
   aNotificacion,
@@ -170,8 +173,8 @@ export interface UsuarioConHash extends UsuarioActual {
   passwordHash: string;
 }
 
-/** Usado só pela infra de autenticação (login e sessão). */
-export class PostgresUsuarioRepository {
+/** Login/sessão (infra) e gestão de usuários (tela de Usuarios). */
+export class PostgresUsuarioRepository implements UsuarioRepository {
   constructor(private readonly sql: Sql) {}
 
   async obtenerActivoPorId(id: string): Promise<UsuarioActual | null> {
@@ -193,5 +196,68 @@ export class PostgresUsuarioRepository {
     );
     const f = filas[0];
     return f ? { id: f.id, nombre: f.nombre, rol: f.rol, email: f.email, passwordHash: f.password_hash } : null;
+  }
+
+  async listar(): Promise<UsuarioListado[]> {
+    const filas = await consultar<{
+      id: string;
+      email: string;
+      nombre: string;
+      rol: Rol;
+      activo: boolean;
+      created_at: Date | string;
+    }>(
+      this.sql,
+      "listar usuarios",
+      "select id, email, nombre, rol::text as rol, activo, created_at from usuarios order by activo desc, nombre",
+    );
+    return filas.map((f) => ({
+      id: f.id,
+      email: f.email,
+      nombre: f.nombre,
+      rol: f.rol,
+      activo: f.activo,
+      createdAt: iso(f.created_at),
+    }));
+  }
+
+  async existeEmail(email: string): Promise<boolean> {
+    const filas = await consultar(this.sql, "existe email", "select 1 from usuarios where email = $1", [
+      email.trim().toLowerCase(),
+    ]);
+    return filas.length > 0;
+  }
+
+  async crear(u: { email: string; nombre: string; rol: Rol; passwordHash: string }): Promise<string> {
+    const [f] = await consultar<{ id: string }>(
+      this.sql,
+      "crear usuario",
+      "insert into usuarios (email, nombre, rol, password_hash) values ($1, $2, $3, $4) returning id",
+      [u.email.trim().toLowerCase(), u.nombre, u.rol, u.passwordHash],
+    );
+    return f!.id;
+  }
+
+  async actualizar(id: string, c: { rol?: Rol; activo?: boolean; passwordHash?: string }): Promise<boolean> {
+    const filas = await consultar(
+      this.sql,
+      "actualizar usuario",
+      `update usuarios set
+         rol = coalesce($2::rol_usuario, rol),
+         activo = coalesce($3::boolean, activo),
+         password_hash = coalesce($4::text, password_hash)
+       where id = $1 returning id`,
+      [id, c.rol ?? null, c.activo ?? null, c.passwordHash ?? null],
+    );
+    return filas.length === 1;
+  }
+
+  async contarAdminsActivos(): Promise<number> {
+    const [f] = await consultar<{ n: number | string }>(
+      this.sql,
+      "contar admins",
+      "select count(*) as n from usuarios where rol = 'admin' and activo",
+    );
+    return Number(f?.n ?? 0);
   }
 }

@@ -4,6 +4,7 @@ import { cache } from "react";
 import Anthropic from "@anthropic-ai/sdk";
 import { ClaudeAsistente, ClaudeLectorReceta } from "@/adapters/ia/ClaudeIA";
 import { WaMeNotificador } from "@/adapters/notificador/WaMeNotificador";
+import { PostgresConsultas } from "@/adapters/postgres/PostgresConsultas";
 import { PostgresPedidoRepository } from "@/adapters/postgres/PostgresPedidoRepository";
 import {
   PostgresClienteRepository,
@@ -11,10 +12,12 @@ import {
   PostgresOrganizacionRepository,
   PostgresRecetaRepository,
   PostgresRenovacionRepository,
+  PostgresUsuarioRepository,
 } from "@/adapters/postgres/PostgresRepositorios";
 import { crearCasosDeUso, type CasosDeUso } from "@/application";
 import { SesionCookie } from "./auth";
 import { sql } from "./db";
+import { hashSenha } from "./password";
 
 /**
  * Composition root: o único lugar que conhece application e adapters ao mesmo tempo.
@@ -44,6 +47,9 @@ export const casosDeUso = cache(async (): Promise<CasosDeUso> => {
     sesion: new SesionCookie(),
     notificador: new WaMeNotificador(),
     reloj: { ahora: () => new Date() },
+    consultas: new PostgresConsultas(db),
+    usuarios: new PostgresUsuarioRepository(db),
+    hasher: { hash: hashSenha },
     lectorReceta: clienteClaude() ? new ClaudeLectorReceta(clienteClaude()!) : null,
     asistente: clienteClaude() ? new ClaudeAsistente(clienteClaude()!) : null,
   });
