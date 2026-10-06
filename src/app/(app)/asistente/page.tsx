@@ -18,7 +18,7 @@ export default async function PaginaAsistente() {
   return (
     <div className="flex flex-col gap-5 lg:max-w-3xl">
       <div className="flex items-start gap-3">
-        <span className="bg-marca flex size-11 shrink-0 items-center justify-center rounded-xl text-white shadow-md shadow-violet-500/25">
+        <span className="bg-marca flex size-11 shrink-0 items-center justify-center rounded-xl text-white shadow-md shadow-tema-500/25">
           <Sparkles className="size-5" />
         </span>
         <div>

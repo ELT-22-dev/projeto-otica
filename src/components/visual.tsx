@@ -40,7 +40,8 @@ export function Avatar({ nombre, className }: { nombre: string; className?: stri
 }
 
 export const TONOS = {
-  violeta: "bg-violet-100 text-violet-700",
+  // Segue o tema escolhido (cor principal do sistema).
+  violeta: "bg-tema-100 text-tema-700",
   rosa: "bg-pink-100 text-pink-700",
   cielo: "bg-sky-100 text-sky-700",
   ambar: "bg-amber-100 text-amber-700",
@@ -91,7 +92,7 @@ export function Logo({ className, claro = false }: { className?: string; claro?:
     <div
       className={cn(
         "flex size-10 shrink-0 items-center justify-center rounded-xl text-white",
-        claro ? "bg-white/15 backdrop-blur" : "bg-marca shadow-md shadow-violet-500/25",
+        claro ? "bg-white/15 backdrop-blur" : "bg-marca shadow-md shadow-tema-500/25",
         className,
       )}
     >

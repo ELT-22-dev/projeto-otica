@@ -64,7 +64,7 @@ export function TablaPedidos({
           {pedidos.map((p) => {
             const saldo = saldoPendiente(p);
             return (
-              <tr key={p.id} className="transition hover:bg-violet-50/40">
+              <tr key={p.id} className="transition hover:bg-tema-50/40">
                 <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
                   <Link href={`/pedidos/${p.id}`} className="hover:underline">
                     {formatearNumeroPedido(p.numero)}

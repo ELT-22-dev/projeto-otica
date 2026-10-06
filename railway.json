@@ -2,7 +2,18 @@
   "$schema": "https://railway.com/railway.schema.json",
   "build": {
     "builder": "RAILPACK",
-    "buildCommand": "echo 'Servico do WhatsApp: roda direto com tsx, sem build do Next.js'"
+    "buildCommand": "echo 'Servico do WhatsApp: roda direto com tsx, sem build do Next.js'",
+    "watchPatterns": [
+      "worker/**",
+      "src/adapters/**",
+      "src/application/**",
+      "src/domain/**",
+      "src/ports/**",
+      "package.json",
+      "package-lock.json",
+      "railway.json",
+      ".nvmrc"
+    ]
   },
   "deploy": {
     "startCommand": "npm run whatsapp",

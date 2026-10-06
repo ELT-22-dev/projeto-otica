@@ -59,7 +59,7 @@ export default async function PaginaPedido({ params }: { params: Promise<{ id: s
             </div>
             <Link
               href={`/clientes/${pedido.cliente.id}`}
-              className="shrink-0 rounded-xl bg-violet-50 px-3 py-2 text-sm font-medium text-violet-700 hover:bg-violet-100"
+              className="shrink-0 rounded-xl bg-tema-50 px-3 py-2 text-sm font-medium text-tema-700 hover:bg-tema-100"
             >
               {t.detalle.verFicha}
             </Link>
@@ -93,7 +93,7 @@ export default async function PaginaPedido({ params }: { params: Promise<{ id: s
               <Dato
                 etiqueta={t.pedidos.saldo}
                 valor={saldo > 0 ? formatearReales(saldo) : t.pedidos.pagado}
-                className={cn("font-semibold", saldo > 0 ? "text-violet-700" : "text-emerald-700")}
+                className={cn("font-semibold", saldo > 0 ? "text-tema-700" : "text-emerald-700")}
               />
             </div>
           </section>

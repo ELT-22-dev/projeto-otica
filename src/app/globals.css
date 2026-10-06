@@ -4,6 +4,34 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Escala da cor do tema: bg-tema-50 … text-tema-900 (segue o tema escolhido). */
+@theme inline {
+  --color-tema-50: oklch(0.975 calc(0.02 * var(--c)) var(--h));
+  --color-tema-100: oklch(0.945 calc(0.045 * var(--c)) var(--h));
+  --color-tema-200: oklch(0.9 calc(0.08 * var(--c)) var(--h));
+  --color-tema-300: oklch(0.83 calc(0.12 * var(--c)) var(--h));
+  --color-tema-400: oklch(0.73 calc(0.17 * var(--c)) var(--h));
+  --color-tema-500: oklch(0.62 calc(0.2 * var(--c)) var(--h));
+  --color-tema-600: oklch(0.54 calc(0.21 * var(--c)) var(--h));
+  --color-tema-700: oklch(0.47 calc(0.19 * var(--c)) var(--h));
+  --color-tema-800: oklch(0.39 calc(0.15 * var(--c)) var(--h));
+  --color-tema-900: oklch(0.31 calc(0.12 * var(--c)) var(--h));
+
+  /* Sombras em camadas, tingidas com o tema: cards que flutuam. */
+  --shadow-xs:
+    0 1px 2px oklch(0.3 calc(0.05 * var(--c)) var(--h) / 0.06),
+    0 8px 22px -8px oklch(0.35 calc(0.1 * var(--c)) var(--h) / 0.18);
+  --shadow-sm:
+    0 1px 3px oklch(0.3 calc(0.05 * var(--c)) var(--h) / 0.07),
+    0 12px 30px -10px oklch(0.35 calc(0.12 * var(--c)) var(--h) / 0.24);
+  --shadow-md:
+    0 2px 6px oklch(0.3 calc(0.05 * var(--c)) var(--h) / 0.08),
+    0 18px 40px -12px oklch(0.35 calc(0.14 * var(--c)) var(--h) / 0.3);
+  --shadow-lg:
+    0 4px 10px oklch(0.3 calc(0.05 * var(--c)) var(--h) / 0.08),
+    0 26px 56px -16px oklch(0.33 calc(0.15 * var(--c)) var(--h) / 0.36);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -49,39 +77,69 @@
 }
 
 :root {
-  /* Base neutra levemente violeta; cor vem dos acentos */
-  --background: oklch(0.985 0.006 285);
-  --foreground: oklch(0.22 0.03 285);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.03 285);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.03 285);
-  --primary: oklch(0.54 0.22 285);
+  /*
+   * Tema de cor: tudo deriva do matiz --h (cor principal) e --h2 (segunda cor do degradê).
+   * --c multiplica a saturação (Grafito quase cinza). Cada pessoa escolhe o seu (cookie "tema").
+   */
+  --h: 285;
+  --h2: 330;
+  --c: 1;
+
+  /* Fundo tingido (nada de branco puro); os cards ficam claros e "flutuam" sobre ele. */
+  --background: oklch(0.955 calc(0.022 * var(--c)) var(--h));
+  --foreground: oklch(0.24 calc(0.03 * var(--c)) var(--h));
+  --card: oklch(0.995 calc(0.005 * var(--c)) var(--h));
+  --card-foreground: var(--foreground);
+  --popover: var(--card);
+  --popover-foreground: var(--foreground);
+  --primary: oklch(0.54 calc(0.21 * var(--c)) var(--h));
   --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.96 0.02 285);
-  --secondary-foreground: oklch(0.35 0.1 285);
-  --muted: oklch(0.965 0.008 285);
-  --muted-foreground: oklch(0.52 0.025 285);
-  --accent: oklch(0.96 0.02 285);
-  --accent-foreground: oklch(0.35 0.1 285);
+  --secondary: oklch(0.945 calc(0.04 * var(--c)) var(--h));
+  --secondary-foreground: oklch(0.38 calc(0.12 * var(--c)) var(--h));
+  --muted: oklch(0.95 calc(0.018 * var(--c)) var(--h));
+  --muted-foreground: oklch(0.5 calc(0.035 * var(--c)) var(--h));
+  --accent: var(--secondary);
+  --accent-foreground: var(--secondary-foreground);
   --destructive: oklch(0.6 0.22 20);
-  --border: oklch(0.92 0.012 285);
-  --input: oklch(0.9 0.015 285);
-  --ring: oklch(0.65 0.18 285);
-  --chart-1: oklch(0.54 0.22 285);
+  --border: oklch(0.88 calc(0.03 * var(--c)) var(--h) / 0.6);
+  --input: oklch(0.86 calc(0.03 * var(--c)) var(--h));
+  --ring: oklch(0.65 calc(0.17 * var(--c)) var(--h));
+  --chart-1: oklch(0.54 calc(0.21 * var(--c)) var(--h));
   --chart-2: oklch(0.65 0.2 340);
   --chart-3: oklch(0.7 0.15 200);
   --chart-4: oklch(0.78 0.15 75);
   --chart-5: oklch(0.7 0.16 155);
-  --radius: 0.75rem;
-  --sidebar: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.22 0.03 285);
-  --sidebar-primary: oklch(0.54 0.22 285);
-  --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.96 0.02 285);
-  --sidebar-accent-foreground: oklch(0.35 0.1 285);
-  --sidebar-border: oklch(0.92 0.012 285);
-  --sidebar-ring: oklch(0.65 0.18 285);
+  --radius: 0.85rem;
+  --sidebar: var(--card);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--secondary);
+  --sidebar-accent-foreground: var(--secondary-foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+}
+
+[data-tema="oceano"] {
+  --h: 245;
+  --h2: 200;
+}
+[data-tema="esmeralda"] {
+  --h: 165;
+  --h2: 205;
+}
+[data-tema="coral"] {
+  --h: 22;
+  --h2: 350;
+}
+[data-tema="sol"] {
+  --h: 60;
+  --h2: 28;
+}
+[data-tema="grafito"] {
+  --h: 265;
+  --h2: 240;
+  --c: 0.18;
 }
 
 .dark {
@@ -134,12 +192,51 @@
   }
 }
 
-/* Gradiente da marca (violeta → fúcsia) */
+/* Degradê da marca, nas cores do tema */
 @utility bg-marca {
-  background-image: linear-gradient(135deg, oklch(0.55 0.23 285), oklch(0.62 0.24 330));
+  background-image: linear-gradient(
+    135deg,
+    oklch(0.55 calc(0.22 * var(--c)) var(--h)),
+    oklch(0.62 calc(0.22 * var(--c)) var(--h2))
+  );
 }
 @utility text-marca {
-  background-image: linear-gradient(135deg, oklch(0.5 0.23 285), oklch(0.6 0.24 330));
+  background-image: linear-gradient(
+    135deg,
+    oklch(0.5 calc(0.22 * var(--c)) var(--h)),
+    oklch(0.6 calc(0.22 * var(--c)) var(--h2))
+  );
   background-clip: text;
   color: transparent;
+}
+/* Painel lateral: degradê escuro do tema */
+@utility bg-painel {
+  background-image: linear-gradient(
+    165deg,
+    oklch(0.36 calc(0.13 * var(--c)) var(--h)),
+    oklch(0.27 calc(0.1 * var(--c)) var(--h2))
+  );
+}
+
+/* Fundo com manchas suaves de cor (fica parado ao rolar). */
+body {
+  background-image:
+    radial-gradient(55rem 38rem at 105% -8%, oklch(0.86 calc(0.09 * var(--c)) var(--h2) / 0.45), transparent 62%),
+    radial-gradient(50rem 36rem at -8% 108%, oklch(0.86 calc(0.08 * var(--c)) var(--h) / 0.42), transparent 62%);
+  background-attachment: fixed;
+}
+
+/* Cards clicáveis sobem um pouco ao passar o mouse. */
+:is(a, button).shadow-xs,
+:is(a, button).shadow-sm {
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+@media (hover: hover) {
+  :is(a, button).shadow-xs:hover,
+  :is(a, button).shadow-sm:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
 }

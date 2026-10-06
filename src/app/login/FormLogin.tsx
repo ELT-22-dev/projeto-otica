@@ -43,7 +43,7 @@ export function FormLogin() {
       <Button
         type="submit"
         disabled={pendiente}
-        className="bg-marca h-12 rounded-xl border-0 text-base shadow-lg shadow-violet-500/25 hover:brightness-110"
+        className="bg-marca h-12 rounded-xl border-0 text-base shadow-lg shadow-tema-500/25 hover:brightness-110"
       >
         {pendiente ? t.login.entrando : t.login.entrar}
       </Button>

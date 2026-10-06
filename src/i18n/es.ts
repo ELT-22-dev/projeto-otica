@@ -327,6 +327,17 @@ export const es = {
     },
     enConstruccion: "En construcción",
   },
+  temas: {
+    titulo: "Color del sistema",
+    nombres: {
+      violeta: "Violeta",
+      oceano: "Océano",
+      esmeralda: "Esmeralda",
+      coral: "Coral",
+      sol: "Sol",
+      grafito: "Grafito",
+    },
+  },
   agenda: {
     titulo: "Agenda",
     descripcion: "Citas de los próximos 14 días y pedidos que llegan por WhatsApp.",

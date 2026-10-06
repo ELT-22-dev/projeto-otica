@@ -455,7 +455,7 @@ export function FormNuevoPedido({
       <Button
         type="submit"
         disabled={guardando}
-        className="h-14 text-base font-semibold bg-marca border-0 shadow-lg shadow-violet-500/25 hover:brightness-110 md:col-span-2 md:ml-auto md:h-12 md:w-72"
+        className="h-14 text-base font-semibold bg-marca border-0 shadow-lg shadow-tema-500/25 hover:brightness-110 md:col-span-2 md:ml-auto md:h-12 md:w-72"
       >
         {guardando ? t.nuevo.guardando : t.nuevo.guardar}
       </Button>

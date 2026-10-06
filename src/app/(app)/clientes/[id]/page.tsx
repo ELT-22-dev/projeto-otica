@@ -69,10 +69,7 @@ export default async function PaginaCliente({ params }: { params: Promise<{ id: 
           <ul className="flex flex-col divide-y overflow-hidden rounded-2xl border bg-card shadow-xs">
             {pedidos.map((p) => (
               <li key={p.id}>
-                <Link
-                  href={`/pedidos/${p.id}`}
-                  className="flex items-center gap-3 p-4 transition hover:bg-violet-50/50"
-                >
+                <Link href={`/pedidos/${p.id}`} className="flex items-center gap-3 p-4 transition hover:bg-tema-50/50">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <span className="font-mono">{formatearNumeroPedido(p.numero)}</span>

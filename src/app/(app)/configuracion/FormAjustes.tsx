@@ -187,7 +187,7 @@ export function FormAjustes({ inicial, iaDisponible }: { inicial: Valores; iaDis
       <Button
         type="submit"
         disabled={guardando}
-        className="bg-marca h-12 border-0 text-base shadow-lg shadow-violet-500/25 hover:brightness-110 md:ml-auto md:w-72"
+        className="bg-marca h-12 border-0 text-base shadow-lg shadow-tema-500/25 hover:brightness-110 md:ml-auto md:w-72"
       >
         {t.app.guardar}
       </Button>

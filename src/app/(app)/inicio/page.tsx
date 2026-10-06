@@ -108,7 +108,7 @@ export default async function PaginaInicio() {
 
 function VerTodos({ href }: { href: string }) {
   return (
-    <Link href={href} className="inline-flex items-center text-xs font-medium text-violet-700 hover:underline">
+    <Link href={href} className="inline-flex items-center text-xs font-medium text-tema-700 hover:underline">
       {t.inicio.verTodos}
       <ChevronRight className="size-3.5" />
     </Link>

@@ -1,9 +1,11 @@
 import { LogOut } from "lucide-react";
+import { cookies } from "next/headers";
 import { ProveedorModoWhatsapp } from "@/components/pedidos/ModoWhatsapp";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/visual";
 import { t } from "@/i18n";
 import { casosDeUso } from "@/infra/container";
+import { COOKIE_TEMA } from "@/lib/temas";
 import { cerrarSesionAccion } from "./acciones";
 import { BarraLateral, NavInferior } from "./Navegacion";
 
@@ -26,6 +28,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
   }
 
   const esAdmin = contexto.usuario.rol === "admin";
+  const tema = (await cookies()).get(COOKIE_TEMA)?.value;
   const [porAvisar, conteos, agenda, whatsapp] = await Promise.all([
     casos.obtenerPorAvisar(),
     casos.contarPedidosPorStatus(),
@@ -54,10 +57,11 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
         usuario={contexto.usuario.nombre}
         avisos={avisos}
         resumen={resumen}
+        tema={tema}
       />
 
-      <div className="flex min-h-dvh flex-col md:pl-20 lg:pl-64">
-        <header className="sticky top-0 z-20 flex items-center justify-between border-b bg-background/90 px-4 py-3 backdrop-blur md:hidden">
+      <div className="flex min-h-dvh flex-col md:pl-26 lg:pl-70">
+        <header className="sticky top-0 z-20 flex items-center justify-between bg-background/70 px-4 py-3 shadow-xs backdrop-blur-xl md:hidden">
           <div className="flex min-w-0 items-center gap-2.5">
             <Logo className="size-8 rounded-lg" />
             <div className="min-w-0">
@@ -72,12 +76,12 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
             </Button>
           </form>
         </header>
-        <main className="mx-auto w-full max-w-xl flex-1 px-4 pt-4 pb-28 md:max-w-none md:px-6 md:py-6 lg:max-w-6xl lg:px-8 lg:py-8">
+        <main className="mx-auto w-full max-w-xl flex-1 px-4 pt-4 pb-32 md:max-w-none md:px-6 md:py-6 lg:max-w-6xl lg:px-8 lg:py-8">
           <ProveedorModoWhatsapp automatico={whatsapp.automatico}>{children}</ProveedorModoWhatsapp>
         </main>
       </div>
 
-      <NavInferior esAdmin={esAdmin} avisos={avisos} />
+      <NavInferior esAdmin={esAdmin} avisos={avisos} tema={tema} />
     </div>
   );
 }

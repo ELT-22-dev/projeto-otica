@@ -18,7 +18,7 @@ export default function PaginaLogin() {
       {/* Painel da marca: só no desktop */}
       <section className="bg-marca relative hidden overflow-hidden p-12 text-white lg:flex lg:flex-col lg:justify-between">
         <div className="absolute -top-24 -right-24 size-96 rounded-full bg-white/10 blur-2xl" aria-hidden />
-        <div className="absolute -bottom-32 -left-16 size-96 rounded-full bg-fuchsia-300/20 blur-3xl" aria-hidden />
+        <div className="absolute -bottom-32 -left-16 size-96 rounded-full bg-tema-300/25 blur-3xl" aria-hidden />
         <Logo claro className="relative" />
         <div className="relative flex flex-col gap-8">
           <h2 className="max-w-md text-4xl leading-tight font-semibold tracking-tight">{t.login.lema}</h2>

@@ -57,7 +57,7 @@ export function TarjetaPedido({
               <span
                 className={cn(
                   "inline-flex items-center gap-1 rounded-full px-2 py-0.5",
-                  saldo > 0 ? "bg-violet-50 font-medium text-violet-700" : "bg-emerald-50 text-emerald-700",
+                  saldo > 0 ? "bg-tema-50 font-medium text-tema-700" : "bg-emerald-50 text-emerald-700",
                 )}
               >
                 <Wallet className="size-3.5" />

@@ -90,7 +90,7 @@ export function ChatAsistente({ nombreUsuario }: { nombreUsuario: string }) {
               key={s}
               type="button"
               onClick={() => preguntar(s)}
-              className="rounded-2xl border bg-card p-4 text-left text-sm shadow-xs transition hover:border-violet-300 hover:bg-violet-50/50"
+              className="rounded-2xl border bg-card p-4 text-left text-sm shadow-xs transition hover:border-tema-300 hover:bg-tema-50/50"
             >
               <Sparkles className="mb-2 size-4 text-fuchsia-500" />
               {s}
@@ -138,7 +138,7 @@ export function ChatAsistente({ nombreUsuario }: { nombreUsuario: string }) {
           e.preventDefault();
           preguntar(texto);
         }}
-        className="sticky bottom-24 z-10 flex items-end gap-2 rounded-2xl border bg-card p-2 shadow-lg shadow-violet-500/5 md:bottom-6"
+        className="sticky bottom-24 z-10 flex items-end gap-2 rounded-2xl border bg-card p-2 shadow-lg shadow-tema-500/5 md:bottom-6"
       >
         <textarea
           value={texto}
