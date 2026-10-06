@@ -78,6 +78,37 @@ describe("asistente OpenAI / NVIDIA", () => {
     });
   });
 
+  it("modelo que saiu do catálogo: passa para o próximo da lista e fica nele", async () => {
+    const pedidos: Record<string, unknown>[] = [];
+    let n = 0;
+    const fetchFalso: typeof fetch = async (_url, init) => {
+      const cuerpo = JSON.parse(String(init?.body));
+      pedidos.push(cuerpo);
+      if (cuerpo.model === "viejo/modelo") {
+        return new Response(JSON.stringify({ error: { message: "Function 'viejo/modelo': Not found" } }), {
+          status: 404,
+        });
+      }
+      return new Response(
+        JSON.stringify({
+          id: String(++n),
+          object: "chat.completion",
+          created: 0,
+          model: cuerpo.model,
+          choices: [{ index: 0, finish_reason: "stop", message: { role: "assistant", content: "ok" } }],
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      );
+    };
+    const cliente = new OpenAI({ apiKey: "k", baseURL: "http://falso/v1", fetch: fetchFalso, maxRetries: 0 });
+    const asistente = new OpenAICompatibleAsistente(cliente, ["viejo/modelo", "nuevo/modelo"]);
+    const pedir = () => asistente.responder({ instrucciones: "", historial: [], pregunta: "hola", herramientas: [] });
+
+    expect(await pedir()).toBe("ok");
+    expect(await pedir()).toBe("ok");
+    expect(pedidos.map((p) => p.model)).toEqual(["viejo/modelo", "nuevo/modelo", "nuevo/modelo"]);
+  });
+
   it("erro da API vira ia_no_disponible", async () => {
     const asistente = new OpenAICompatibleAsistente(clienteFalso([], []), "m");
     await expect(
@@ -96,7 +127,11 @@ describe("escolha do provedor pelas variáveis de ambiente", () => {
   it("claude por padrão; nvidia sem leitura de receita", () => {
     expect(configIADesdeEnv({ IA_ACTIVA: "1", ANTHROPIC_API_KEY: "a" })).toMatchObject({ proveedor: "claude" });
     const nvidia = crearIA(configIADesdeEnv({ IA_ACTIVA: "1", IA_PROVEEDOR: "NVIDIA", NVIDIA_API_KEY: "n" })!);
-    expect(nvidia).toMatchObject({ proveedor: "nvidia", modelo: "meta/llama-3.3-70b-instruct", lectorReceta: null });
+    expect(nvidia).toMatchObject({
+      proveedor: "nvidia",
+      modelo: "moonshotai/kimi-k2.6, deepseek-ai/deepseek-v4.1-flash, openai/gpt-oss-20b",
+      lectorReceta: null,
+    });
     const openai = crearIA(
       configIADesdeEnv({ IA_ACTIVA: "1", IA_PROVEEDOR: "openai", OPENAI_API_KEY: "o", IA_MODELO: "gpt-x" })!,
     );

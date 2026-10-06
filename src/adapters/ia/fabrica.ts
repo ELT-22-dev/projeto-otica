@@ -17,7 +17,8 @@ export interface ConfigIA {
 const MODELO_POR_DEFECTO: Record<ProveedorIA, string> = {
   claude: MODELO_CLAUDE,
   openai: "gpt-5.5",
-  nvidia: "meta/llama-3.3-70b-instruct",
+  // O catálogo da NVIDIA muda com frequência: vários em ordem, o serviço usa o primeiro que responder.
+  nvidia: "moonshotai/kimi-k2.6,deepseek-ai/deepseek-v4.1-flash,openai/gpt-oss-20b",
 };
 
 const BASE_URL_NVIDIA = "https://integrate.api.nvidia.com/v1";
@@ -31,7 +32,12 @@ export interface IA {
 }
 
 export function crearIA(config: ConfigIA): IA {
-  const modelo = config.modelo?.trim() || MODELO_POR_DEFECTO[config.proveedor];
+  // IA_MODELO aceita uma lista separada por vírgula (OpenAI/NVIDIA usam a lista; Claude, o primeiro).
+  const modelos = (config.modelo?.trim() || MODELO_POR_DEFECTO[config.proveedor])
+    .split(",")
+    .map((m) => m.trim())
+    .filter(Boolean);
+  const modelo = modelos[0]!;
   switch (config.proveedor) {
     case "claude": {
       const client = new Anthropic({ apiKey: config.clave, timeout: 90_000, maxRetries: 1 });
@@ -46,8 +52,8 @@ export function crearIA(config: ConfigIA): IA {
       const client = new OpenAI({ apiKey: config.clave, timeout: 90_000, maxRetries: 1 });
       return {
         proveedor: "openai",
-        modelo,
-        asistente: new OpenAICompatibleAsistente(client, modelo),
+        modelo: modelos.join(", "),
+        asistente: new OpenAICompatibleAsistente(client, modelos),
         lectorReceta: new OpenAICompatibleLectorReceta(client, modelo),
       };
     }
@@ -55,8 +61,8 @@ export function crearIA(config: ConfigIA): IA {
       const client = new OpenAI({ apiKey: config.clave, baseURL: BASE_URL_NVIDIA, timeout: 90_000, maxRetries: 1 });
       return {
         proveedor: "nvidia",
-        modelo,
-        asistente: new OpenAICompatibleAsistente(client, modelo),
+        modelo: modelos.join(", "),
+        asistente: new OpenAICompatibleAsistente(client, modelos),
         lectorReceta: null,
       };
     }

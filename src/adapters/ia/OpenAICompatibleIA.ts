@@ -29,11 +29,46 @@ async function llamar<T>(fn: () => Promise<T>): Promise<T> {
 
 const MAX_ITERACIONES = 8;
 
+/** O modelo não existe (mais) ou não aceita ferramentas: vale tentar o próximo da lista. */
+function modeloNoSirve(e: unknown): boolean {
+  if (!(e instanceof OpenAI.APIError)) return false;
+  if (e.status === 404) return true;
+  return (e.status === 400 || e.status === 422) && /model|tool|function/i.test(e.message);
+}
+
 export class OpenAICompatibleAsistente implements AsistentePort {
+  private readonly modelos: string[];
+  /** Índice do modelo em uso; fica no que funcionou para não repetir as falhas. */
+  private actual = 0;
+
+  /**
+   * `modelos`: um ou vários, em ordem de preferência. Catálogos como o da NVIDIA tiram modelos
+   * do ar sem aviso; com uma lista, o serviço passa para o seguinte em vez de parar de responder.
+   */
   constructor(
     private readonly client: OpenAI,
-    private readonly modelo: string,
-  ) {}
+    modelos: string | string[],
+  ) {
+    this.modelos = typeof modelos === "string" ? [modelos] : modelos;
+  }
+
+  private async completar(params: Omit<OpenAI.Chat.ChatCompletionCreateParamsNonStreaming, "model">) {
+    for (;;) {
+      const modelo = this.modelos[this.actual]!;
+      try {
+        return await this.client.chat.completions.create({ ...params, model: modelo });
+      } catch (e) {
+        if (modeloNoSirve(e) && this.actual < this.modelos.length - 1) {
+          console.warn(
+            `[IA] ${modelo} no disponible (${(e as Error).message}); probando ${this.modelos[this.actual + 1]}`,
+          );
+          this.actual++;
+          continue;
+        }
+        throw e;
+      }
+    }
+  }
 
   async responder({
     instrucciones,
@@ -61,11 +96,7 @@ export class OpenAICompatibleAsistente implements AsistentePort {
     // Laço de ferramentas: o modelo pede uma consulta, a gente executa e devolve o resultado.
     for (let i = 0; i < MAX_ITERACIONES; i++) {
       const respuesta = await llamar(() =>
-        this.client.chat.completions.create({
-          model: this.modelo,
-          messages: mensajes,
-          ...(tools.length > 0 ? { tools } : {}),
-        }),
+        this.completar({ messages: mensajes, ...(tools.length > 0 ? { tools } : {}) }),
       );
       const mensaje = respuesta.choices[0]?.message;
       if (!mensaje) throw new ErrorDominio("ia_no_disponible", "respuesta vacía");
