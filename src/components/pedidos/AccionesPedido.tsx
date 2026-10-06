@@ -15,11 +15,15 @@ export function AccionesPedido({
   pedidoId,
   status,
   className,
+  compacto = false,
 }: {
   pedidoId: string;
   status: StatusPedido;
   className?: string;
+  /** Botões menores, lado a lado: para a tabela no PC. */
+  compacto?: boolean;
 }) {
+  const alto = compacto ? "h-8 px-3 text-sm" : "h-11 text-base";
   const whatsapp = useWhatsapp();
   const [pendiente, iniciar] = useTransition();
   const ocupado = pendiente || whatsapp.pendiente;
@@ -35,7 +39,7 @@ export function AccionesPedido({
   if (status === "en_laboratorio") {
     return (
       <Button
-        className={cn("h-11 w-full bg-emerald-600 text-base text-white hover:bg-emerald-700", className)}
+        className={cn(alto, "bg-emerald-600 text-white hover:bg-emerald-700", !compacto && "w-full", className)}
         disabled={ocupado}
         onClick={() => whatsapp.ejecutar(() => listoYAvisarAccion(pedidoId))}
       >
@@ -47,17 +51,17 @@ export function AccionesPedido({
 
   if (status === "listo") {
     return (
-      <div className={cn("grid grid-cols-2 gap-2", className)}>
+      <div className={cn(compacto ? "flex gap-2" : "grid grid-cols-2 gap-2", className)}>
         <Button
           variant="outline"
-          className="h-11 border-emerald-300 text-base text-emerald-800 hover:bg-emerald-50"
+          className={cn(alto, "border-emerald-300 text-emerald-800 hover:bg-emerald-50")}
           disabled={ocupado}
           onClick={() => whatsapp.ejecutar(() => listoYAvisarAccion(pedidoId))}
         >
           <MessageCircle data-icon="inline-start" />
           {t.acciones.avisarCorto}
         </Button>
-        <Button className="h-11 text-base" disabled={ocupado} onClick={entregar}>
+        <Button className={alto} disabled={ocupado} onClick={entregar}>
           <PackageCheck data-icon="inline-start" />
           {t.acciones.entregado}
         </Button>

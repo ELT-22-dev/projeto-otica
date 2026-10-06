@@ -14,9 +14,9 @@ export default async function PaginaRenovaciones() {
   const hoy = fechaLocal(new Date());
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 lg:gap-6">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">{t.renovaciones.titulo}</h1>
+        <h1 className="text-xl font-semibold tracking-tight lg:text-2xl">{t.renovaciones.titulo}</h1>
         <p className="text-sm text-muted-foreground">{t.renovaciones.descripcion}</p>
       </div>
 
@@ -25,7 +25,7 @@ export default async function PaginaRenovaciones() {
           {t.renovaciones.vacio}
         </p>
       ) : (
-        <ul className="flex flex-col gap-3">
+        <ul className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
           {clientes.map((c) => (
             <li key={c.clienteId} className="flex flex-col gap-3 rounded-xl border bg-card p-4">
               <Link href={`/clientes/${c.clienteId}`} className="min-w-0">

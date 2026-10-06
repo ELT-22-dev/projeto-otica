@@ -62,9 +62,9 @@ describe("schema", () => {
   it("constraints de negócio", async () => {
     await expect(registrar(clienteId, { total: 100, adelanto: 200 })).rejects.toThrow(/adelanto_no_supera_total/);
     await expect(db.query("update pedidos set status = 'listo' where numero = 1")).rejects.toThrow(/listo_tiene_fecha/);
-    await expect(
-      db.query("insert into clientes (nombre, whatsapp) values ('Ana', '123')"),
-    ).rejects.toThrow(/whatsapp_check/);
+    await expect(db.query("insert into clientes (nombre, whatsapp) values ('Ana', '123')")).rejects.toThrow(
+      /whatsapp_check/,
+    );
   });
 
   it("configuração tem exatamente uma linha", async () => {
@@ -75,11 +75,11 @@ describe("schema", () => {
 
   it("e-mail de usuário é único e minúsculo", async () => {
     await db.query("insert into usuarios (email, nombre, password_hash) values ('a@b.com', 'A', 'x')");
-    await expect(db.query("insert into usuarios (email, nombre, password_hash) values ('a@b.com', 'B', 'x')")).rejects.toThrow(
-      /unique/,
-    );
-    await expect(db.query("insert into usuarios (email, nombre, password_hash) values ('C@b.com', 'C', 'x')")).rejects.toThrow(
-      /check/,
-    );
+    await expect(
+      db.query("insert into usuarios (email, nombre, password_hash) values ('a@b.com', 'B', 'x')"),
+    ).rejects.toThrow(/unique/);
+    await expect(
+      db.query("insert into usuarios (email, nombre, password_hash) values ('C@b.com', 'C', 'x')"),
+    ).rejects.toThrow(/check/);
   });
 });

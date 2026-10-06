@@ -3,9 +3,7 @@ import { ZodError } from "zod";
 import { ErrorDominio, type CodigoErrorDominio } from "@/domain/shared/errores";
 import { t } from "@/i18n";
 
-export type ResultadoAccion<T = null> =
-  | { ok: true; data: T }
-  | { ok: false; error: string; campo?: string };
+export type ResultadoAccion<T = null> = { ok: true; data: T } | { ok: false; error: string; campo?: string };
 
 /** Campo do formulário onde mostrar cada erro de domínio. */
 const CAMPO_POR_ERROR: Partial<Record<CodigoErrorDominio, string>> = {

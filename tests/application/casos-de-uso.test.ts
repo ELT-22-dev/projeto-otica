@@ -82,7 +82,9 @@ describe("listoYAvisar", () => {
       nuevoPedido({ cliente: { tipo: "nuevo", nombre: "João Silva", whatsapp: "11 91234-5678", idioma: "pt" } }),
     );
     await casos.listoYAvisar(pedidoId);
-    expect(f.notificaciones[0]!.mensaje).toBe("Olá João! Aqui é da Óticas Latina. Seus óculos (pedido #0001) já estão prontos.");
+    expect(f.notificaciones[0]!.mensaje).toBe(
+      "Olá João! Aqui é da Óticas Latina. Seus óculos (pedido #0001) já estão prontos.",
+    );
   });
 
   it("avisar de novo um pedido listo não muda o status", async () => {
@@ -107,7 +109,9 @@ describe("listoYAvisar", () => {
   it("a mensagem nunca contém dados da receita", async () => {
     const f = crearFakes();
     const casos = crearCasosDeUso(f.deps);
-    const { pedidoId } = await casos.crearPedido(nuevoPedido({ receta: { odEsfera: "-3,75", observaciones: "SECRETO" } }));
+    const { pedidoId } = await casos.crearPedido(
+      nuevoPedido({ receta: { odEsfera: "-3,75", observaciones: "SECRETO" } }),
+    );
     const r = await casos.listoYAvisar(pedidoId);
     const url = r.tipo === "requiere_accion" ? decodeURIComponent(r.url) : "";
     expect(url).not.toMatch(/3,75|3\.75|SECRETO/);
@@ -148,7 +152,13 @@ describe("renovações", () => {
     const f = crearFakes();
     f.candidatos.push(
       { ...base, clienteId: "a", pedidoId: "pa", ultimaEntrega: "2025-10-20T15:00:00.000Z" },
-      { ...base, clienteId: "b", pedidoId: "pb", ultimaEntrega: "2025-09-10T15:00:00.000Z", ultimoAvisoRenovacion: "2026-09-30T15:00:00.000Z" },
+      {
+        ...base,
+        clienteId: "b",
+        pedidoId: "pb",
+        ultimaEntrega: "2025-09-10T15:00:00.000Z",
+        ultimoAvisoRenovacion: "2026-09-30T15:00:00.000Z",
+      },
       { ...base, clienteId: "c", pedidoId: "pc", ultimaEntrega: "2025-10-01T15:00:00.000Z", pedidosAbiertos: 1 },
     );
     const lista = await crearCasosDeUso(f.deps).listarRenovaciones();

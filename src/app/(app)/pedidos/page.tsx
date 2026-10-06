@@ -1,6 +1,7 @@
 import { Search, X } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { TablaPedidos } from "@/components/pedidos/TablaPedidos";
 import { TarjetaPedido } from "@/components/pedidos/TarjetaPedido";
 import { Input } from "@/components/ui/input";
 import type { StatusPedido } from "@/domain/pedido/status-pedido";
@@ -31,7 +32,9 @@ export default async function PaginaPedidos({
 }) {
   const params = await searchParams;
   const estadoParam = texto(params.estado);
-  const estado: Pestana = (PESTANAS as readonly string[]).includes(estadoParam) ? (estadoParam as Pestana) : "en_laboratorio";
+  const estado: Pestana = (PESTANAS as readonly string[]).includes(estadoParam)
+    ? (estadoParam as Pestana)
+    : "en_laboratorio";
   const busqueda = texto(params.q).slice(0, 60);
 
   const casos = await casosDeUso();
@@ -42,34 +45,37 @@ export default async function PaginaPedidos({
   const hoy = fechaLocal(new Date());
 
   return (
-    <div className="flex flex-col gap-4">
-      <form action="/pedidos" className="relative">
-        <Search className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-muted-foreground" />
-        <input type="hidden" name="estado" value={estado} />
-        <Input
-          name="q"
-          type="search"
-          defaultValue={busqueda}
-          placeholder={t.pedidos.buscar}
-          className="h-12 rounded-xl bg-card pl-10 text-base"
-          enterKeyHint="search"
-          autoComplete="off"
-        />
-        {busqueda && (
-          <Link
-            href={`/pedidos?estado=${estado}`}
-            className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-2 text-muted-foreground"
-            aria-label={t.app.cancelar}
-          >
-            <X className="size-4" />
-          </Link>
-        )}
-      </form>
+    <div className="flex flex-col gap-4 lg:gap-5">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <h1 className="hidden text-2xl font-semibold tracking-tight lg:block">{t.pedidos.titulo}</h1>
+        <form action="/pedidos" className="relative lg:w-96" title={t.pedidos.atajoBusqueda}>
+          <Search className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-muted-foreground" />
+          <input type="hidden" name="estado" value={estado} />
+          <Input
+            name="q"
+            type="search"
+            defaultValue={busqueda}
+            placeholder={t.pedidos.buscar}
+            className="h-12 rounded-xl bg-card pl-10 text-base lg:h-10 lg:text-sm"
+            enterKeyHint="search"
+            autoComplete="off"
+          />
+          {busqueda && (
+            <Link
+              href={`/pedidos?estado=${estado}`}
+              className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-2 text-muted-foreground"
+              aria-label={t.app.cancelar}
+            >
+              <X className="size-4" />
+            </Link>
+          )}
+        </form>
+      </div>
 
       {busqueda ? (
         <p className="text-sm text-muted-foreground">{t.pedidos.resultados(pedidos.length)}</p>
       ) : (
-        <nav className="grid grid-cols-3 gap-1 rounded-xl bg-muted p-1" aria-label={t.pedidos.titulo}>
+        <nav className="grid grid-cols-3 gap-1 rounded-xl bg-muted p-1 lg:max-w-xl" aria-label={t.pedidos.titulo}>
           {PESTANAS.map((p) => (
             <Link
               key={p}
@@ -92,11 +98,16 @@ export default async function PaginaPedidos({
           {busqueda ? t.pedidos.vacio.busqueda : t.pedidos.vacio[estado]}
         </p>
       ) : (
-        <div className="flex flex-col gap-3">
-          {pedidos.map((p) => (
-            <TarjetaPedido key={p.id} pedido={p} hoy={hoy} mostrarStatus={Boolean(busqueda)} />
-          ))}
-        </div>
+        <>
+          <div className="flex flex-col gap-3 lg:hidden">
+            {pedidos.map((p) => (
+              <TarjetaPedido key={p.id} pedido={p} hoy={hoy} mostrarStatus={Boolean(busqueda)} />
+            ))}
+          </div>
+          <div className="hidden lg:block">
+            <TablaPedidos pedidos={pedidos} hoy={hoy} mostrarStatus={Boolean(busqueda)} />
+          </div>
+        </>
       )}
     </div>
   );

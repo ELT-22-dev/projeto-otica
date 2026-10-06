@@ -42,7 +42,7 @@ function casos(u: UsuarioActual | null = usuario) {
 
 beforeEach(async () => {
   db = await crearBaseDeDatos();
-  const q = async <T,>(texto: string, params?: unknown[]) => (await db.query<T>(texto, params)).rows;
+  const q = async <T>(texto: string, params?: unknown[]) => (await db.query<T>(texto, params)).rows;
   await sembrarDemo(q, {
     hoy: HOY,
     usuarios: [
@@ -160,7 +160,9 @@ describe("configuração", () => {
     });
     const [miguel] = await casos().listarPedidos({ busqueda: "miguel" });
     const r = await casos().listoYAvisar(miguel!.id);
-    expect(r.tipo === "requiere_accion" && decodeURIComponent(r.url)).toMatch(/¡Miguel, pedido #\d{4} listo en Óticas Latina SP!$/);
+    expect(r.tipo === "requiere_accion" && decodeURIComponent(r.url)).toMatch(
+      /¡Miguel, pedido #\d{4} listo en Óticas Latina SP!$/,
+    );
     expect((await casos(admin).obtenerConfiguracion()).telefonoWhatsapp).toBe("551133334444");
   });
 

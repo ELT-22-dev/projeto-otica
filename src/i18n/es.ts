@@ -58,6 +58,15 @@ export const es = {
     pagado: "Pagado",
     listoDesde: "Listo desde",
     entregadoEl: "Entregado el",
+    columnas: {
+      numero: "N.º",
+      cliente: "Cliente",
+      pedido: "Pedido",
+      fecha: "Fecha",
+      saldo: "Saldo",
+      estado: "Estado",
+    },
+    atajoBusqueda: "Presiona / para buscar",
   },
   acciones: {
     listoYAvisar: "Listo y avisar",
@@ -123,6 +132,7 @@ export const es = {
     titulo: (numero: string) => `Pedido ${numero}`,
     cliente: "Cliente",
     verFicha: "Ver ficha",
+    verPedido: "Ver pedido",
     fechaPedido: "Fecha del pedido",
     total: "Total",
     adelanto: "Adelanto",

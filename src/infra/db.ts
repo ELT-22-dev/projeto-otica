@@ -20,11 +20,13 @@ export function sql(): Sql {
     const url = env().DATABASE_URL;
     if (esLocal(url)) {
       const pool = new pg.Pool({ connectionString: url, max: 5 });
-      instancia = { query: async <T,>(texto: string, params: unknown[] = []) => (await pool.query(texto, params)).rows as T[] };
+      instancia = {
+        query: async <T>(texto: string, params: unknown[] = []) => (await pool.query(texto, params)).rows as T[],
+      };
     } else {
       const consulta = neon(url);
       instancia = {
-        query: async <T,>(texto: string, params: unknown[] = []) => (await consulta.query(texto, params)) as T[],
+        query: async <T>(texto: string, params: unknown[] = []) => (await consulta.query(texto, params)) as T[],
       };
     }
   }

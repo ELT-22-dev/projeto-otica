@@ -9,10 +9,7 @@ import { requerirUsuario, type Dependencias } from "../dependencias";
 import { esquemaId } from "../esquemas";
 import { marcarComoListo } from "../pedidos/cambiarStatus";
 
-type DepsAviso = Pick<
-  Dependencias,
-  "pedidos" | "organizacion" | "notificador" | "notificaciones" | "sesion" | "reloj"
->;
+type DepsAviso = Pick<Dependencias, "pedidos" | "organizacion" | "notificador" | "notificaciones" | "sesion" | "reloj">;
 
 /** Gera a mensagem de "pronto" no idioma do cliente, envia pelo notificador e registra no log. */
 export function generarAvisoCliente(deps: DepsAviso) {
@@ -32,13 +29,16 @@ export function generarAvisoCliente(deps: DepsAviso) {
     });
 
     const resultado = await deps.notificador.enviar({ telefono: pedido.cliente.whatsapp, texto });
-    await deps.notificaciones.registrar({
-      clienteId: pedido.cliente.id,
-      pedidoId: pedido.id,
-      tipo: "listo",
-      canal: deps.notificador.canal,
-      mensaje: texto,
-    }, usuario.id);
+    await deps.notificaciones.registrar(
+      {
+        clienteId: pedido.cliente.id,
+        pedidoId: pedido.id,
+        tipo: "listo",
+        canal: deps.notificador.canal,
+        mensaje: texto,
+      },
+      usuario.id,
+    );
     return resultado;
   };
 }
@@ -73,13 +73,16 @@ export function avisarRenovacion(
     });
 
     const resultado = await deps.notificador.enviar({ telefono: candidato.whatsapp, texto });
-    await deps.notificaciones.registrar({
-      clienteId: candidato.clienteId,
-      pedidoId: candidato.pedidoId,
-      tipo: "renovacion",
-      canal: deps.notificador.canal,
-      mensaje: texto,
-    }, usuario.id);
+    await deps.notificaciones.registrar(
+      {
+        clienteId: candidato.clienteId,
+        pedidoId: candidato.pedidoId,
+        tipo: "renovacion",
+        canal: deps.notificador.canal,
+        mensaje: texto,
+      },
+      usuario.id,
+    );
     return resultado;
   };
 }

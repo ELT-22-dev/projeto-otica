@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { t } from "@/i18n";
 import { casosDeUso } from "@/infra/container";
 import { cerrarSesionAccion } from "./acciones";
-import { NavInferior } from "./NavInferior";
+import { BarraLateral, NavInferior } from "./Navegacion";
 
 export default async function LayoutApp({ children }: { children: React.ReactNode }) {
   const contexto = await (await casosDeUso()).obtenerContexto();
@@ -25,20 +25,25 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
   const esAdmin = contexto.usuario.rol === "admin";
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-xl flex-col">
-      <header className="sticky top-0 z-20 flex items-center justify-between border-b bg-background/90 px-4 py-3 backdrop-blur">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold">{contexto.organizacion.nombre}</p>
-          <p className="truncate text-xs text-muted-foreground">{contexto.usuario.nombre}</p>
-        </div>
-        <form action={cerrarSesionAccion}>
-          <Button variant="ghost" size="sm" type="submit" className="text-muted-foreground">
-            <LogOut data-icon="inline-start" />
-            {t.nav.salir}
-          </Button>
-        </form>
-      </header>
-      <main className="flex-1 px-4 pt-4 pb-28">{children}</main>
+    <div className="min-h-dvh">
+      <BarraLateral esAdmin={esAdmin} optica={contexto.organizacion.nombre} usuario={contexto.usuario.nombre} />
+
+      <div className="flex min-h-dvh flex-col lg:pl-64">
+        <header className="sticky top-0 z-20 flex items-center justify-between border-b bg-background/90 px-4 py-3 backdrop-blur lg:hidden">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold">{contexto.organizacion.nombre}</p>
+            <p className="truncate text-xs text-muted-foreground">{contexto.usuario.nombre}</p>
+          </div>
+          <form action={cerrarSesionAccion}>
+            <Button variant="ghost" size="sm" type="submit" className="text-muted-foreground">
+              <LogOut data-icon="inline-start" />
+              {t.nav.salir}
+            </Button>
+          </form>
+        </header>
+        <main className="mx-auto w-full max-w-xl flex-1 px-4 pt-4 pb-28 lg:max-w-6xl lg:px-8 lg:py-8">{children}</main>
+      </div>
+
       <NavInferior esAdmin={esAdmin} />
     </div>
   );

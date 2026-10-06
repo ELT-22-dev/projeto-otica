@@ -14,11 +14,26 @@ export function FormLogin() {
     <form action={accion} className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
         <Label htmlFor="email">{t.login.email}</Label>
-        <Input id="email" name="email" type="email" autoComplete="email" inputMode="email" required className="h-12 text-base" />
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          inputMode="email"
+          required
+          className="h-12 text-base"
+        />
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="password">{t.login.password}</Label>
-        <Input id="password" name="password" type="password" autoComplete="current-password" required className="h-12 text-base" />
+        <Input
+          id="password"
+          name="password"
+          type="password"
+          autoComplete="current-password"
+          required
+          className="h-12 text-base"
+        />
       </div>
       {estado.error && (
         <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">

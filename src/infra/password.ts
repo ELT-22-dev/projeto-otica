@@ -31,5 +31,4 @@ export async function verificarSenha(senha: string, almacenado: string): Promise
 }
 
 /** Hash válido de uma senha aleatória: usado para gastar o mesmo tempo quando o e-mail não existe. */
-export const HASH_FICTICIO =
-  "scrypt$16384$8$1$AAAAAAAAAAAAAAAAAAAAAA==$" + Buffer.alloc(64).toString("base64");
+export const HASH_FICTICIO = "scrypt$16384$8$1$AAAAAAAAAAAAAAAAAAAAAA==$" + Buffer.alloc(64).toString("base64");

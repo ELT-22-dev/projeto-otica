@@ -6,12 +6,15 @@ import { parsearMonto } from "@/domain/shared/dinero";
 import { fechaLocal, mesesCompletosEntre, sumarDias, sumarMeses } from "@/domain/shared/fecha";
 
 describe("plantillas", () => {
-  const listoEs =
-    "Hola {nombre}! 👋 Te escribimos de {optica}. Tus lentes (pedido #{numero}) ya están listos.";
+  const listoEs = "Hola {nombre}! 👋 Te escribimos de {optica}. Tus lentes (pedido #{numero}) ya están listos.";
 
   it("preenche as variáveis usando o primeiro nome", () => {
     expect(
-      renderizarPlantilla(listoEs, { nombreCliente: "María José Quispe", optica: "Óticas Latina", numeroPedido: "0007" }),
+      renderizarPlantilla(listoEs, {
+        nombreCliente: "María José Quispe",
+        optica: "Óticas Latina",
+        numeroPedido: "0007",
+      }),
     ).toBe("Hola María! 👋 Te escribimos de Óticas Latina. Tus lentes (pedido #0007) ya están listos.");
   });
 

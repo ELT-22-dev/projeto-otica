@@ -14,7 +14,7 @@ function simple(v: number | null, sufijo = ""): string {
 
 export function TablaReceta({ receta }: { receta: DatosReceta }) {
   return (
-    <div className="flex flex-col gap-2 text-sm">
+    <div className="flex max-w-lg flex-col gap-2 text-sm">
       <table className="w-full table-fixed text-center">
         <thead className="text-xs text-muted-foreground">
           <tr>

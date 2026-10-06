@@ -9,7 +9,9 @@ import type { Sql } from "@/adapters/postgres/sql";
 export async function crearBaseDeDatos(): Promise<PGlite> {
   const db = await PGlite.create({ extensions: { pg_trgm, unaccent } });
   const dir = join(process.cwd(), "db", "migrations");
-  for (const archivo of readdirSync(dir).filter((f) => f.endsWith(".sql")).sort()) {
+  for (const archivo of readdirSync(dir)
+    .filter((f) => f.endsWith(".sql"))
+    .sort()) {
     try {
       await db.exec(readFileSync(join(dir, archivo), "utf8"));
     } catch (e) {
@@ -22,6 +24,6 @@ export async function crearBaseDeDatos(): Promise<PGlite> {
 /** Mesma interface que o app usa com o Neon. */
 export function sqlDe(db: PGlite): Sql {
   return {
-    query: async <T,>(texto: string, params: unknown[] = []) => (await db.query<T>(texto, params)).rows,
+    query: async <T>(texto: string, params: unknown[] = []) => (await db.query<T>(texto, params)).rows,
   };
 }

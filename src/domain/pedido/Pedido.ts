@@ -39,10 +39,7 @@ export function saldoPendiente(p: Pick<Pedido, "valorTotal" | "valorAdelanto">):
   return p.valorTotal - p.valorAdelanto;
 }
 
-export function estaAtrasado(
-  p: Pick<Pedido, "status" | "fechaEntregaPrevista">,
-  hoy: FechaISO,
-): boolean {
+export function estaAtrasado(p: Pick<Pedido, "status" | "fechaEntregaPrevista">, hoy: FechaISO): boolean {
   return p.status === "en_laboratorio" && compararFechas(p.fechaEntregaPrevista, hoy) < 0;
 }
 

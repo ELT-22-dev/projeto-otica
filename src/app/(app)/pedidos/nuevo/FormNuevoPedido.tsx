@@ -111,12 +111,10 @@ export function FormNuevoPedido({ hoy, idiomaDefault }: { hoy: string; idiomaDef
   }
 
   const errorEn = (...campos: string[]) =>
-    error?.campo && campos.includes(error.campo) ? (
-      <p className="text-sm text-destructive">{error.mensaje}</p>
-    ) : null;
+    error?.campo && campos.includes(error.campo) ? <p className="text-sm text-destructive">{error.mensaje}</p> : null;
 
   return (
-    <form onSubmit={enviar} className="flex flex-col gap-5" noValidate>
+    <form onSubmit={enviar} className="grid gap-5 lg:grid-cols-2 lg:items-start" noValidate>
       {/* Cliente */}
       <section className="flex flex-col gap-3 rounded-xl border bg-card p-4">
         <h2 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">{t.nuevo.cliente}</h2>
@@ -296,12 +294,16 @@ export function FormNuevoPedido({ hoy, idiomaDefault }: { hoy: string; idiomaDef
       </section>
 
       {/* Receta (opcional, recolhida) */}
-      <Collapsible open={recetaAbierta} onOpenChange={setRecetaAbierta} className="rounded-xl border bg-card">
+      <Collapsible
+        open={recetaAbierta}
+        onOpenChange={setRecetaAbierta}
+        className="rounded-xl border bg-card lg:col-span-2"
+      >
         <CollapsibleTrigger className="flex w-full items-center justify-between p-4 text-left">
           <span className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">{t.nuevo.receta}</span>
           <ChevronDown className={cn("size-5 text-muted-foreground transition", recetaAbierta && "rotate-180")} />
         </CollapsibleTrigger>
-        <CollapsibleContent className="flex flex-col gap-4 px-4 pb-4">
+        <CollapsibleContent className="grid gap-4 px-4 pb-4 lg:grid-cols-2 lg:gap-x-8">
           <div className="grid grid-cols-[auto_1fr_1fr_1fr] items-center gap-2 text-sm">
             <span />
             <span className="text-center text-xs text-muted-foreground">{t.receta.esfera}</span>
@@ -312,7 +314,11 @@ export function FormNuevoPedido({ hoy, idiomaDefault }: { hoy: string; idiomaDef
             ))}
           </div>
           <div className="grid grid-cols-3 gap-2">
-            <CampoNumero etiqueta={t.receta.adicion} valor={receta.adicion} onCambio={(v) => campoReceta("adicion", v)} />
+            <CampoNumero
+              etiqueta={t.receta.adicion}
+              valor={receta.adicion}
+              onCambio={(v) => campoReceta("adicion", v)}
+            />
             <CampoNumero etiqueta={t.receta.dnpOd} valor={receta.dnpOd} onCambio={(v) => campoReceta("dnpOd", v)} />
             <CampoNumero etiqueta={t.receta.dnpOi} valor={receta.dnpOi} onCambio={(v) => campoReceta("dnpOi", v)} />
           </div>
@@ -341,12 +347,16 @@ export function FormNuevoPedido({ hoy, idiomaDefault }: { hoy: string; idiomaDef
       </Collapsible>
 
       {error && !error.campo && (
-        <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive lg:col-span-2">
           {error.mensaje}
         </p>
       )}
 
-      <Button type="submit" disabled={guardando} className="h-14 text-base font-semibold">
+      <Button
+        type="submit"
+        disabled={guardando}
+        className="h-14 text-base font-semibold lg:col-span-2 lg:ml-auto lg:h-12 lg:w-72"
+      >
         {guardando ? t.nuevo.guardando : t.nuevo.guardar}
       </Button>
     </form>
@@ -383,11 +393,24 @@ function FilaOjo({
   );
 }
 
-function CampoNumero({ etiqueta, valor, onCambio }: { etiqueta: string; valor: string; onCambio: (v: string) => void }) {
+function CampoNumero({
+  etiqueta,
+  valor,
+  onCambio,
+}: {
+  etiqueta: string;
+  valor: string;
+  onCambio: (v: string) => void;
+}) {
   return (
     <div className="flex flex-col gap-1.5">
       <Label className="text-xs">{etiqueta}</Label>
-      <Input value={valor} onChange={(e) => onCambio(e.target.value)} inputMode="decimal" className="h-11 text-center text-base" />
+      <Input
+        value={valor}
+        onChange={(e) => onCambio(e.target.value)}
+        inputMode="decimal"
+        className="h-11 text-center text-base"
+      />
     </div>
   );
 }

@@ -13,7 +13,10 @@ const numeroOpcional = z.preprocess((v) => {
 }, z.number().nullable());
 
 const textoOpcional = (max: number) =>
-  z.preprocess((v) => (typeof v === "string" && v.trim() === "" ? null : v), z.string().trim().max(max).nullable().optional());
+  z.preprocess(
+    (v) => (typeof v === "string" && v.trim() === "" ? null : v),
+    z.string().trim().max(max).nullable().optional(),
+  );
 
 export const esquemaId = z.uuid();
 
@@ -28,7 +31,9 @@ export const esquemaReceta = z.object({
   dnpOd: numeroOpcional,
   dnpOi: numeroOpcional,
   observaciones: textoOpcional(2000).transform((v) => v ?? null),
-  fechaReceta: z.preprocess((v) => (v === "" ? null : v), z.iso.date().nullable().optional()).transform((v) => v ?? null),
+  fechaReceta: z
+    .preprocess((v) => (v === "" ? null : v), z.iso.date().nullable().optional())
+    .transform((v) => v ?? null),
 });
 
 export const esquemaCrearPedido = z.object({

@@ -88,7 +88,14 @@ export interface FilaCliente {
 }
 
 export function aCliente(f: FilaCliente): Cliente {
-  return { id: f.id, nombre: f.nombre, whatsapp: f.whatsapp, idioma: f.idioma, notas: f.notas, createdAt: iso(f.created_at) };
+  return {
+    id: f.id,
+    nombre: f.nombre,
+    whatsapp: f.whatsapp,
+    idioma: f.idioma,
+    notas: f.notas,
+    createdAt: iso(f.created_at),
+  };
 }
 
 export const COLUMNAS_RECETA = `

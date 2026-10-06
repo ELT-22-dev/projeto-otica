@@ -29,7 +29,9 @@ async function main() {
       passwordHash: await hashSenha(process.env.SEED_ATENDENTE_PASSWORD),
     });
   }
-  const demoWhatsapp = process.env.SEED_DEMO_WHATSAPP?.trim() ? normalizarWhatsapp(process.env.SEED_DEMO_WHATSAPP) : null;
+  const demoWhatsapp = process.env.SEED_DEMO_WHATSAPP?.trim()
+    ? normalizarWhatsapp(process.env.SEED_DEMO_WHATSAPP)
+    : null;
 
   const db = await conectar();
   try {
@@ -48,9 +50,12 @@ async function main() {
     });
     await db.query("commit");
 
-    console.log(`✓ Óticas Latina: ${r.clientes} clientes, ${r.pedidos} pedidos (2 elegíveis para renovação) — hoje: ${hoy}`);
+    console.log(
+      `✓ Óticas Latina: ${r.clientes} clientes, ${r.pedidos} pedidos (2 elegíveis para renovação) — hoje: ${hoy}`,
+    );
     console.log(`✓ Usuários: ${usuarios.map((u) => `${u.email} (${u.rol})`).join(", ")}`);
-    if (!demoWhatsapp) console.log("  Dica: defina SEED_DEMO_WHATSAPP com seu número para a demo abrir uma conversa real.");
+    if (!demoWhatsapp)
+      console.log("  Dica: defina SEED_DEMO_WHATSAPP com seu número para a demo abrir uma conversa real.");
   } catch (e) {
     await db.query("rollback").catch(() => {});
     throw e;
