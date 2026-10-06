@@ -124,7 +124,8 @@ Sem isso o sistema funciona com wa.me (um toque abre o WhatsApp com a mensagem p
 - **Ligações** não passam pelo serviço: continuam tocando no celular. Mensagens não são marcadas como lidas.
 
 **Rodar o serviço** (`worker/whatsapp.ts`): precisa ficar ligado 24 h, então não roda na Vercel. Qualquer Node 22 serve
-(Railway, Render pago, Fly, VPS). Comando de build `npm ci`, comando de início `npm run whatsapp`. Variáveis:
+(Railway, Render pago, Fly, VPS). Na Railway o `railway.json` já define tudo (sem build do Next, início com
+`npm run whatsapp`, 1 réplica só: duas cópias brigariam pela mesma sessão). Em outro lugar: `npm ci` e `npm run whatsapp`. Variáveis:
 `DATABASE_URL`, `WHATSAPP_TOKEN` e as da IA (ver `.env.example`). No app (Vercel): `WHATSAPP_URL` (endereço público do
 serviço) e o mesmo `WHATSAPP_TOKEN`. As credenciais do aparelho ficam no banco (`whatsapp_auth`): reiniciar o serviço
 não pede QR de novo.
