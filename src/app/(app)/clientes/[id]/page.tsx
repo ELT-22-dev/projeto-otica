@@ -23,7 +23,7 @@ export default async function PaginaCliente({ params }: { params: Promise<{ id: 
   return (
     <div className="flex flex-col gap-5 lg:max-w-6xl lg:gap-6">
       <div className="flex items-center gap-2">
-        <Link href="/pedidos" className="-ml-2 rounded-full p-2 hover:bg-muted" aria-label={t.app.volver}>
+        <Link href="/clientes" className="-ml-2 rounded-full p-2 hover:bg-muted" aria-label={t.app.volver}>
           <ArrowLeft className="size-5" />
         </Link>
       </div>

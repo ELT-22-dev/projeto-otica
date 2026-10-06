@@ -94,3 +94,28 @@ export async function leerRecetaAccion(imagen: unknown): Promise<ResultadoAccion
 export async function preguntarAsistenteAccion(entrada: unknown): Promise<ResultadoAccion<string>> {
   return ejecutar(async () => (await casosDeUso()).preguntarAsistente(entrada));
 }
+
+export async function crearUsuarioAccion(entrada: unknown): Promise<ResultadoAccion> {
+  const r = await ejecutar(async () => {
+    await (await casosDeUso()).crearUsuario(entrada);
+    return null;
+  });
+  if (r.ok) refrescar();
+  return r;
+}
+
+export async function actualizarUsuarioAccion(entrada: unknown): Promise<ResultadoAccion> {
+  const r = await ejecutar(async () => {
+    await (await casosDeUso()).actualizarUsuario(entrada);
+    return null;
+  });
+  if (r.ok) refrescar();
+  return r;
+}
+
+export async function restablecerContrasenaAccion(entrada: unknown): Promise<ResultadoAccion> {
+  return ejecutar(async () => {
+    await (await casosDeUso()).restablecerContrasena(entrada);
+    return null;
+  });
+}

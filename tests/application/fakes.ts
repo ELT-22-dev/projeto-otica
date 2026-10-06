@@ -6,13 +6,7 @@ import type { Pedido } from "@/domain/pedido/Pedido";
 import type { CandidatoRenovacion } from "@/domain/renovacion/regla-renovacion";
 import type { UsuarioActual } from "@/domain/usuario/Usuario";
 import { WaMeNotificador } from "@/adapters/notificador/WaMeNotificador";
-import type {
-  HerramientaAsistente,
-  LecturaReceta,
-  PedidoConCliente,
-  RegistroPedido,
-  UsuarioListado,
-} from "@/ports";
+import type { HerramientaAsistente, LecturaReceta, PedidoConCliente, RegistroPedido, UsuarioListado } from "@/ports";
 
 export const ORG: Organizacion = {
   nombre: "Óticas Latina",
@@ -30,8 +24,17 @@ export const ORG: Organizacion = {
   },
 };
 
-export const ATENDENTE: UsuarioActual = { id: "00000000-0000-4000-8000-0000000000a1", nombre: "Nataly", rol: "atendente" };
-export const ADMIN: UsuarioActual = { ...ATENDENTE, id: "00000000-0000-4000-8000-0000000000a2", nombre: "Eddy", rol: "admin" };
+export const ATENDENTE: UsuarioActual = {
+  id: "00000000-0000-4000-8000-0000000000a1",
+  nombre: "Nataly",
+  rol: "atendente",
+};
+export const ADMIN: UsuarioActual = {
+  ...ATENDENTE,
+  id: "00000000-0000-4000-8000-0000000000a2",
+  nombre: "Eddy",
+  rol: "admin",
+};
 
 let secuencia = 0;
 const uuid = () => `00000000-0000-4000-8000-${String(++secuencia).padStart(12, "0")}`;
@@ -161,7 +164,15 @@ export function crearFakes(
       avisosEnviadosDesde: async () => notificaciones.length,
     },
     usuarios: {
-      listar: async () => usuarios.map((u) => ({ id: u.id, email: u.email, nombre: u.nombre, rol: u.rol, activo: u.activo, createdAt: u.createdAt })),
+      listar: async () =>
+        usuarios.map((u) => ({
+          id: u.id,
+          email: u.email,
+          nombre: u.nombre,
+          rol: u.rol,
+          activo: u.activo,
+          createdAt: u.createdAt,
+        })),
       existeEmail: async (email) => usuarios.some((u) => u.email === email.toLowerCase()),
       async crear(u) {
         const id = uuid();

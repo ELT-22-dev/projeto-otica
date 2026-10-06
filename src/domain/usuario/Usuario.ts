@@ -32,6 +32,8 @@ export function validarCambioUsuario(p: {
     throw new ErrorDominio("operacion_no_permitida", "quitarse admin");
   }
   const dejaDeSerAdminActivo =
-    objetivo.rol === "admin" && objetivo.activo && (cambios.activo === false || (cambios.rol && cambios.rol !== "admin"));
+    objetivo.rol === "admin" &&
+    objetivo.activo &&
+    (cambios.activo === false || (cambios.rol && cambios.rol !== "admin"));
   if (dejaDeSerAdminActivo && adminsActivos <= 1) throw new ErrorDominio("operacion_no_permitida", "ultimo admin");
 }

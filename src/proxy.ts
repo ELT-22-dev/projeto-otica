@@ -11,7 +11,7 @@ export async function proxy(request: NextRequest) {
   const esPublica = RUTAS_PUBLICAS.some((r) => pathname === r || pathname.startsWith(`${r}/`));
 
   if (!autenticado && !esPublica) return NextResponse.redirect(new URL("/login", request.url));
-  if (autenticado && esPublica) return NextResponse.redirect(new URL("/pedidos", request.url));
+  if (autenticado && esPublica) return NextResponse.redirect(new URL("/inicio", request.url));
   return NextResponse.next();
 }
 

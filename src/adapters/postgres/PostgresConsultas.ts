@@ -74,7 +74,11 @@ export class PostgresConsultas implements ConsultasRepository {
   }
 
   async contarClientes(): Promise<number> {
-    const [f] = await consultar<{ n: number | string }>(this.sql, "contar clientes", "select count(*) as n from clientes");
+    const [f] = await consultar<{ n: number | string }>(
+      this.sql,
+      "contar clientes",
+      "select count(*) as n from clientes",
+    );
     return Number(f?.n ?? 0);
   }
 

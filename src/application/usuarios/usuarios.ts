@@ -6,11 +6,7 @@ import { requerirAdmin, type Dependencias } from "../dependencias";
 type Deps = Pick<Dependencias, "usuarios" | "hasher" | "sesion">;
 
 const esquemaNuevo = z.object({
-  email: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .pipe(z.email().max(200)),
+  email: z.string().trim().toLowerCase().pipe(z.email().max(200)),
   nombre: z.string().trim().min(2).max(120),
   rol: z.enum(ROLES),
   contrasena: z.string().max(200),

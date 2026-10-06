@@ -18,5 +18,5 @@ export async function entrarAccion(
   if (!datos.success || !(await iniciarSesion(datos.data.email, datos.data.password))) {
     return { error: t.login.error };
   }
-  redirect("/pedidos");
+  redirect("/inicio");
 }

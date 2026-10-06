@@ -9,18 +9,18 @@ describe("validarCambioUsuario (domínio)", () => {
   const admin = { id: "a", rol: "admin" as const, activo: true };
 
   it("ninguém se desativa nem tira o próprio admin", () => {
-    expect(() => validarCambioUsuario({ actorId: "a", objetivo: admin, cambios: { activo: false }, adminsActivos: 2 })).toThrow(
-      "operacion_no_permitida",
-    );
+    expect(() =>
+      validarCambioUsuario({ actorId: "a", objetivo: admin, cambios: { activo: false }, adminsActivos: 2 }),
+    ).toThrow("operacion_no_permitida");
     expect(() =>
       validarCambioUsuario({ actorId: "a", objetivo: admin, cambios: { rol: "atendente" }, adminsActivos: 2 }),
     ).toThrow("operacion_no_permitida");
   });
 
   it("a ótica nunca fica sem admin ativo", () => {
-    expect(() => validarCambioUsuario({ actorId: "b", objetivo: admin, cambios: { activo: false }, adminsActivos: 1 })).toThrow(
-      "operacion_no_permitida",
-    );
+    expect(() =>
+      validarCambioUsuario({ actorId: "b", objetivo: admin, cambios: { activo: false }, adminsActivos: 1 }),
+    ).toThrow("operacion_no_permitida");
     expect(() =>
       validarCambioUsuario({ actorId: "b", objetivo: admin, cambios: { activo: false }, adminsActivos: 2 }),
     ).not.toThrow();
