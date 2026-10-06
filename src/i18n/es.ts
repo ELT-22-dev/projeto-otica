@@ -388,7 +388,10 @@ export const es = {
     sinConversaciones: "Cuando los clientes escriban al WhatsApp de la óptica, aparecerán aquí.",
     requiereAtencion: "Necesita respuesta",
     marcarVista: "Ya respondí",
-    responderEnCelular: "Responder en WhatsApp",
+    responderEnCelular: "Abrir en WhatsApp",
+    respuesta: "Escribe una respuesta…",
+    enviar: "Enviar",
+    enviada: "Respuesta enviada",
     origen: { cliente: "Cliente", aviso: "Aviso", ia: "IA", telefono: "Equipo" },
     estadoMensaje: { recibido: "", pendiente: "Enviando…", enviado: "", error: "No se pudo enviar" },
   },
@@ -448,6 +451,7 @@ export const es = {
     cita_sin_whatsapp: "Esta cita no tiene WhatsApp para avisar.",
     whatsapp_servicio_apagado:
       "El servicio de WhatsApp está apagado. Pide a quien instaló el sistema que lo encienda y vuelve a intentar.",
+    whatsapp_no_conectado: "El WhatsApp de la óptica no está conectado. Conéctalo con el código QR.",
     operacion_no_permitida:
       "No se puede: la óptica necesita al menos un administrador activo y no puedes desactivarte a ti mismo.",
   } satisfies Record<CodigoErrorDominio, string>,

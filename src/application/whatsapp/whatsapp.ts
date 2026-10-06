@@ -3,7 +3,7 @@ import { esAdmin } from "@/domain/usuario/Usuario";
 import { envioAutomaticoDisponible, type EstadoWhatsapp } from "@/domain/whatsapp/whatsapp";
 import type { MensajeWhatsapp } from "@/ports";
 import { requerirAdmin, requerirUsuario, type Dependencias } from "../dependencias";
-import { esquemaJid } from "../esquemas";
+import { esquemaJid, esquemaRespuestaManual } from "../esquemas";
 
 type DepsServicio = Pick<Dependencias, "servicioWhatsapp" | "sesion">;
 
@@ -82,6 +82,30 @@ export function marcarConversacionAtendida(deps: Pick<Dependencias, "whatsapp" |
   return async (entrada: unknown): Promise<void> => {
     await requerirUsuario(deps.sesion);
     await deps.whatsapp.marcarAtencion(esquemaJid.parse(entrada), false);
+  };
+}
+
+/**
+ * Alguém da ótica responde pela tela. Sai pelo WhatsApp conectado e conta como resposta humana:
+ * a IA fica quieta nessa conversa por um tempo, e o sinal de "necesita respuesta" apaga.
+ */
+export function responderConversacion(deps: Pick<Dependencias, "whatsapp" | "servicioWhatsapp" | "sesion">) {
+  return async (entrada: unknown): Promise<void> => {
+    await requerirUsuario(deps.sesion);
+    const { jid, texto } = esquemaRespuestaManual.parse(entrada);
+    if (!envioAutomaticoDisponible(await deps.servicioWhatsapp.estado())) {
+      throw new ErrorDominio("whatsapp_no_conectado");
+    }
+    const historial = await deps.whatsapp.historial(jid, 20);
+    if (historial.length === 0) throw new ErrorDominio("no_encontrado", "conversación");
+    await deps.servicioWhatsapp.enviar({
+      jid,
+      whatsapp: historial.findLast((m) => m.whatsapp)?.whatsapp ?? null,
+      clienteId: historial.findLast((m) => m.clienteId)?.clienteId ?? null,
+      texto,
+      origen: "equipo",
+    });
+    await deps.whatsapp.marcarAtencion(jid, false);
   };
 }
 

@@ -276,6 +276,36 @@ describe("IA respondendo no WhatsApp", () => {
     expect(await f.deps.whatsapp.contarChatsConAtencion()).toBe(0);
   });
 
+  it("equipe responde pela tela: sai pelo WhatsApp, apaga o sinal e a IA dá um tempo", async () => {
+    const f = crearFakes({ ahora: AHORA, whatsappConectado: true });
+    conCliente(f);
+    const bot = crearCasosDeUsoBot(f.deps);
+    const casos = crearCasosDeUso(f.deps);
+    await recibir(bot, "¿cuánto cuestan los progresivos?");
+    await f.deps.whatsapp.marcarAtencion(JID, true);
+
+    await casos.responderConversacion({ jid: JID, texto: "Hola Rosa, depende de la receta. ¿Nos mandas una foto?" });
+
+    expect(f.mensajes.at(-1)).toMatchObject({
+      direccion: "saliente",
+      origen: "telefono",
+      estado: "pendiente",
+      jid: JID,
+      whatsapp: "5511987654321",
+    });
+    expect(await f.deps.whatsapp.contarChatsConAtencion()).toBe(0);
+    await recibir(bot, "ok, ya te mando");
+    expect(await bot.responderConversacion(chat)).toEqual({ respondido: false, motivo: "humano_atendiendo" });
+  });
+
+  it("responder pela tela exige o WhatsApp conectado", async () => {
+    const f = crearFakes({ ahora: AHORA });
+    await recibir(crearCasosDeUsoBot(f.deps), "hola");
+    await expect(crearCasosDeUso(f.deps).responderConversacion({ jid: JID, texto: "hola" })).rejects.toThrow(
+      "whatsapp_no_conectado",
+    );
+  });
+
   it("sem IA configurada ninguém responde", async () => {
     const f = crearFakes({ ahora: AHORA, sinIA: true });
     conCliente(f);

@@ -26,6 +26,7 @@ import {
   listarConversaciones,
   marcarConversacionAtendida,
   obtenerWhatsapp,
+  responderConversacion,
   resumenWhatsapp,
 } from "./whatsapp/whatsapp";
 
@@ -71,6 +72,7 @@ export function crearCasosDeUso(deps: Dependencias) {
     desconectarWhatsapp: desconectarWhatsapp(deps),
     listarConversaciones: listarConversaciones(deps),
     marcarConversacionAtendida: marcarConversacionAtendida(deps),
+    responderConversacion: responderConversacion(deps),
     resumenWhatsapp: resumenWhatsapp(deps),
     /** Assistente e respostas no WhatsApp. */
     iaDisponible: deps.asistente !== null,

@@ -21,7 +21,8 @@ export type CodigoErrorDominio =
   | "operacion_no_permitida"
   | "horario_invalido"
   | "cita_sin_whatsapp"
-  | "whatsapp_servicio_apagado";
+  | "whatsapp_servicio_apagado"
+  | "whatsapp_no_conectado";
 
 export class ErrorDominio extends Error {
   readonly codigo: CodigoErrorDominio;

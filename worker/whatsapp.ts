@@ -74,6 +74,23 @@ const PUERTO = Number(process.env.PORT ?? 3200);
 const logger = pino({ level: process.env.WHATSAPP_LOG ?? "warn" });
 const log = (...a: unknown[]) => console.log(new Date().toISOString(), "[whatsapp]", ...a);
 
+/**
+ * Últimos eventos em memória (inclui os avisos "[IA] …" dos adapters), para consultar por
+ * GET /registro sem precisar abrir o painel da hospedagem. Sem dados de clientes além do que já está no log.
+ */
+const registro: string[] = [];
+for (const nivel of ["log", "warn", "error"] as const) {
+  const original = console[nivel].bind(console);
+  console[nivel] = (...a: unknown[]) => {
+    const linea = a
+      .map((x) => (x instanceof Error ? `${x.name}: ${x.message}` : typeof x === "string" ? x : JSON.stringify(x)))
+      .join(" ");
+    registro.push(`${nivel === "log" ? "" : `${nivel.toUpperCase()} `}${linea}`.slice(0, 600));
+    if (registro.length > 80) registro.shift();
+    original(...a);
+  };
+}
+
 // Conexões ociosas fecham em 10 s: sem conexão aberta, o Neon pode suspender.
 const pool = new pg.Pool({ connectionString: URL_BANCO, max: 4, idleTimeoutMillis: 10_000 });
 const sql: Sql = {
@@ -389,8 +406,10 @@ function responder(res: ServerResponse, status: number, datos: unknown) {
 }
 
 const EsquemaMensaje = z.object({
-  whatsapp: z.string().regex(PATRON_TELEFONO),
+  whatsapp: z.string().regex(PATRON_TELEFONO).nullable(),
   jid: z.string().max(100).nullable(),
+  /** aviso: mensagem automática do sistema · equipo: alguém da ótica respondeu pela tela (a IA dá um tempo). */
+  origen: z.enum(["aviso", "equipo"]).default("aviso"),
   clienteId: z.uuid().nullable(),
   texto: z.string().trim().min(1).max(4000),
 });
@@ -404,6 +423,34 @@ async function atender(req: IncomingMessage, res: ServerResponse) {
   switch (ruta) {
     case "GET /estado":
       return responder(res, 200, estado);
+    case "GET /registro":
+      return responder(res, 200, { ia: ia ? `${ia.proveedor} (${ia.modelo})` : null, eventos: registro });
+    case "POST /probar-ia": {
+      // Diagnóstico: uma pergunta simples + uma ferramenta, sem tocar em WhatsApp nem no banco.
+      if (!ia) return responder(res, 200, { ok: false, error: "IA desactivada (IA_ACTIVA / clave)" });
+      try {
+        let usoHerramienta = false;
+        const texto = await ia.asistente.responder({
+          instrucciones: "Responde en español, en una frase. Usa la herramienta hora_actual para saber la hora.",
+          historial: [],
+          pregunta: "¿Qué hora es?",
+          herramientas: [
+            {
+              nombre: "hora_actual",
+              descripcion: "Devuelve la hora actual en São Paulo",
+              esquemaEntrada: { type: "object", properties: {} },
+              ejecutar: async () => {
+                usoHerramienta = true;
+                return { hora: new Date().toLocaleTimeString("es", { timeZone: "America/Sao_Paulo" }) };
+              },
+            },
+          ],
+        });
+        return responder(res, 200, { ok: true, modelo: ia.modelo, usoHerramienta, texto });
+      } catch (e) {
+        return responder(res, 200, { ok: false, error: e instanceof Error ? e.message : String(e) });
+      }
+    }
     case "POST /conectar":
       await conectar();
       return responder(res, 202, estado);
@@ -413,11 +460,12 @@ async function atender(req: IncomingMessage, res: ServerResponse) {
     case "POST /mensajes": {
       if (estado.estado !== "conectado") return responder(res, 409, { error: "whatsapp no conectado" });
       const m = EsquemaMensaje.safeParse(await leerJson(req));
-      if (!m.success) return responder(res, 400, { error: "mensaje inválido" });
+      if (!m.success || (!m.data.whatsapp && !m.data.jid)) return responder(res, 400, { error: "mensaje inválido" });
+      const { origen, ...datos } = m.data;
       const id = await mensajes.registrarMensaje({
-        ...m.data,
+        ...datos,
         direccion: "saliente",
-        origen: "aviso",
+        origen: origen === "equipo" ? "telefono" : "aviso",
         estado: "pendiente",
         nombre: null,
       });

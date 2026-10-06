@@ -122,7 +122,13 @@ export function crearFakes(
     conectar: async () => void servicio.acciones.push("conectar"),
     desconectar: async () => void servicio.acciones.push("desconectar"),
     enviar: (m) =>
-      whatsapp.registrarMensaje({ ...m, direccion: "saliente", origen: "aviso", estado: "pendiente", nombre: null }),
+      whatsapp.registrarMensaje({
+        ...m,
+        direccion: "saliente",
+        origen: m.origen === "equipo" ? "telefono" : "aviso",
+        estado: "pendiente",
+        nombre: null,
+      }),
   };
 
   const conCliente = (p: Pedido): PedidoConCliente => {

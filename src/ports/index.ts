@@ -283,7 +283,14 @@ export interface ServicioWhatsappPort {
   conectar(): Promise<void>;
   desconectar(): Promise<void>;
   /** Entrega a mensagem ao serviço, que envia e grava no histórico. Devolve o id do registro. */
-  enviar(m: { whatsapp: WhatsappE164; jid: string | null; clienteId: string | null; texto: string }): Promise<string>;
+  enviar(m: {
+    whatsapp: WhatsappE164 | null;
+    jid: string | null;
+    clienteId: string | null;
+    texto: string;
+    /** aviso: automático do sistema · equipo: alguém da ótica respondeu pela tela (a IA dá um tempo). */
+    origen?: "aviso" | "equipo";
+  }): Promise<string>;
 }
 
 /** Histórico das conversas do WhatsApp conectado (e fila de envio do serviço). */

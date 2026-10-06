@@ -39,7 +39,13 @@ function dependencias(u: UsuarioActual | null = usuario, asistente: Dependencias
     conectar: async () => {},
     desconectar: async () => {},
     enviar: (m) =>
-      whatsapp.registrarMensaje({ ...m, direccion: "saliente", origen: "aviso", estado: "pendiente", nombre: null }),
+      whatsapp.registrarMensaje({
+        ...m,
+        direccion: "saliente",
+        origen: m.origen === "equipo" ? "telefono" : "aviso",
+        estado: "pendiente",
+        nombre: null,
+      }),
   };
   return {
     clientes: new PostgresClienteRepository(sql),

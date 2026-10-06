@@ -16,12 +16,13 @@ import { qrSvg } from "@/lib/qr";
 import { cn } from "@/lib/utils";
 import { BotonVista } from "./BotonVista";
 import { ConexionWhatsapp } from "./ConexionWhatsapp";
+import { FormRespuesta, RefrescoConversaciones } from "./FormRespuesta";
 
 export const metadata: Metadata = { title: t.crm.titulo };
 
 const hora = new Intl.DateTimeFormat("pt-BR", { timeZone: ZONA_HORARIA, hour: "2-digit", minute: "2-digit" });
 
-function TarjetaConversacion({ c }: { c: Conversacion }) {
+function TarjetaConversacion({ c, puedeResponder }: { c: Conversacion; puedeResponder: boolean }) {
   return (
     <li
       className={cn(
@@ -78,6 +79,8 @@ function TarjetaConversacion({ c }: { c: Conversacion }) {
         })}
       </ul>
 
+      {puedeResponder && <FormRespuesta jid={c.jid} />}
+
       <div className="flex flex-wrap justify-end gap-1.5">
         {c.whatsapp && (
           <a
@@ -130,6 +133,7 @@ export default async function PaginaAvisos() {
       />
 
       <ConexionWhatsapp inicial={estadoInicial} esAdmin={contexto?.usuario.rol === "admin"} />
+      {whatsapp.estado === "conectado" && <RefrescoConversaciones />}
 
       <div className="grid gap-6 lg:grid-cols-[1fr_1fr] lg:items-start">
         <div className="flex flex-col gap-6">
@@ -154,7 +158,7 @@ export default async function PaginaAvisos() {
               ) : (
                 <ul className="flex flex-col gap-3">
                   {conversaciones.map((c) => (
-                    <TarjetaConversacion key={c.jid} c={c} />
+                    <TarjetaConversacion key={c.jid} c={c} puedeResponder={whatsapp.estado === "conectado"} />
                   ))}
                 </ul>
               )}

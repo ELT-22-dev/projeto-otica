@@ -136,3 +136,8 @@ export const esquemaEstadoCita = z.object({
 });
 
 export const esquemaJid = z.string().trim().min(5).max(100);
+
+export const esquemaRespuestaManual = z.object({
+  jid: esquemaJid,
+  texto: z.string().trim().min(1).max(4000),
+});

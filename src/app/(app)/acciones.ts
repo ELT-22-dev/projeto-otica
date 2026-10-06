@@ -184,6 +184,15 @@ export async function desconectarWhatsappAccion(): Promise<ResultadoAccion> {
   return r;
 }
 
+export async function responderConversacionAccion(jid: string, texto: string): Promise<ResultadoAccion> {
+  const r = await ejecutar(async () => {
+    await (await casosDeUso()).responderConversacion({ jid, texto });
+    return null;
+  });
+  if (r.ok) refrescar();
+  return r;
+}
+
 export async function marcarConversacionAtendidaAccion(jid: string): Promise<ResultadoAccion> {
   const r = await ejecutar(async () => {
     await (await casosDeUso()).marcarConversacionAtendida(jid);
