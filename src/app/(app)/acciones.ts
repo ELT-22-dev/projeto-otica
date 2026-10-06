@@ -202,6 +202,15 @@ export async function responderConversacionAccion(jid: string, texto: string): P
   return r;
 }
 
+export async function eliminarConversacionAccion(jid: string): Promise<ResultadoAccion> {
+  const r = await ejecutar(async () => {
+    await (await casosDeUso()).eliminarConversacion(jid);
+    return null;
+  });
+  if (r.ok) refrescar();
+  return r;
+}
+
 export async function marcarConversacionAtendidaAccion(jid: string): Promise<ResultadoAccion> {
   const r = await ejecutar(async () => {
     await (await casosDeUso()).marcarConversacionAtendida(jid);

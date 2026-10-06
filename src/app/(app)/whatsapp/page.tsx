@@ -14,6 +14,7 @@ import { casosDeUso } from "@/infra/container";
 import { formatearInstante } from "@/lib/format";
 import { qrSvg } from "@/lib/qr";
 import { cn } from "@/lib/utils";
+import { BotonEliminarChat } from "./BotonEliminarChat";
 import { BotonVista } from "./BotonVista";
 import { ConexionWhatsapp } from "./ConexionWhatsapp";
 import { FormRespuesta, RefrescoConversaciones } from "./FormRespuesta";
@@ -81,7 +82,9 @@ function TarjetaConversacion({ c, puedeResponder }: { c: Conversacion; puedeResp
 
       {puedeResponder && <FormRespuesta jid={c.jid} />}
 
-      <div className="flex flex-wrap justify-end gap-1.5">
+      <div className="flex flex-wrap items-center justify-end gap-1.5">
+        <BotonEliminarChat jid={c.jid} nombre={c.nombre} />
+        <span className="flex-1" />
         {c.whatsapp && (
           <a
             href={`https://wa.me/${c.whatsapp}`}

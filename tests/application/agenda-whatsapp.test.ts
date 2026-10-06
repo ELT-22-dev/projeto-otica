@@ -306,6 +306,19 @@ describe("IA respondendo no WhatsApp", () => {
     );
   });
 
+  it("eliminar conversa apaga só aquele chat", async () => {
+    const f = crearFakes({ ahora: AHORA });
+    const bot = crearCasosDeUsoBot(f.deps);
+    const casos = crearCasosDeUso(f.deps);
+    await recibir(bot, "hola");
+    await bot.registrarMensajeCliente({ ...chat, jid: "otro@s.whatsapp.net", texto: "otro", idExterno: "otro-1" });
+
+    await casos.eliminarConversacion(JID);
+
+    expect(f.mensajes.map((m) => m.jid)).toEqual(["otro@s.whatsapp.net"]);
+    await expect(casos.eliminarConversacion(JID)).rejects.toThrow("no_encontrado");
+  });
+
   it("sem IA configurada ninguém responde", async () => {
     const f = crearFakes({ ahora: AHORA, sinIA: true });
     conCliente(f);

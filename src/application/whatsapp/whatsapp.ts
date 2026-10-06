@@ -109,6 +109,18 @@ export function responderConversacion(deps: Pick<Dependencias, "whatsapp" | "ser
   };
 }
 
+/**
+ * Apaga o histórico da conversa no sistema. No celular da ótica ela continua.
+ * Sem histórico, a IA também esquece que a equipe tinha respondido (a pausa de 12 h acaba).
+ */
+export function eliminarConversacion(deps: Pick<Dependencias, "whatsapp" | "sesion">) {
+  return async (entrada: unknown): Promise<void> => {
+    await requerirUsuario(deps.sesion);
+    const borradas = await deps.whatsapp.eliminarConversacion(esquemaJid.parse(entrada));
+    if (borradas === 0) throw new ErrorDominio("no_encontrado", "conversación");
+  };
+}
+
 /** Para o menu e para os botões de aviso. */
 export function resumenWhatsapp(deps: Pick<Dependencias, "whatsapp" | "servicioWhatsapp">) {
   return async () => {

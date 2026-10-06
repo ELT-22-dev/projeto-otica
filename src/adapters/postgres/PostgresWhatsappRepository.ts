@@ -103,6 +103,17 @@ export class PostgresWhatsappRepository implements WhatsappRepository {
     );
   }
 
+  async eliminarConversacion(jid: string): Promise<number> {
+    // Avisos ainda sem endereço do WhatsApp aparecem na tela agrupados pelo número.
+    const filas = await consultar(
+      this.sql,
+      "eliminar conversacion",
+      "delete from mensajes_whatsapp where jid = $1 or (jid is null and whatsapp = $1) returning id",
+      [jid],
+    );
+    return filas.length;
+  }
+
   async contarChatsConAtencion(): Promise<number> {
     const [f] = await consultar<{ n: number | string }>(
       this.sql,

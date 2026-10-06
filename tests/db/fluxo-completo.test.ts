@@ -412,6 +412,11 @@ describe("agenda e WhatsApp no banco", () => {
     expect(await deps.whatsapp.existeIdExterno("ABC1")).toBe(true);
     await c.marcarConversacionAtendida(JID);
     expect((await c.resumenWhatsapp()).atencion).toBe(0);
+
+    await c.eliminarConversacion(JID);
+    expect(await c.listarConversaciones()).toEqual([]);
+    // A solicitação de cita que veio da conversa continua na agenda.
+    expect(await c.resumenAgenda()).toEqual({ solicitudes: 1, hoy: 0 });
   });
 });
 

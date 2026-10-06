@@ -304,5 +304,7 @@ export interface WhatsappRepository {
   /** Últimas mensagens de todas as conversas, da mais nova para a mais antiga. */
   recientes(limite: number): Promise<MensajeWhatsapp[]>;
   marcarAtencion(jid: string, requiere: boolean): Promise<void>;
+  /** Apaga o histórico da conversa no sistema (no celular continua). Devolve quantas mensagens apagou. */
+  eliminarConversacion(jid: string): Promise<number>;
   contarChatsConAtencion(): Promise<number>;
 }

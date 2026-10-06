@@ -397,6 +397,10 @@ export const es = {
     respuesta: "Escribe una respuesta…",
     enviar: "Enviar",
     enviada: "Respuesta enviada",
+    eliminarChat: "Eliminar conversación",
+    confirmarEliminarChat: (nombre: string) =>
+      `¿Eliminar la conversación con ${nombre} del sistema? En el celular de la óptica sigue igual.`,
+    chatEliminado: "Conversación eliminada",
     origen: { cliente: "Cliente", aviso: "Aviso", ia: "IA", telefono: "Equipo" },
     estadoMensaje: { recibido: "", pendiente: "Enviando…", enviado: "", error: "No se pudo enviar" },
   },

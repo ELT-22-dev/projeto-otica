@@ -114,6 +114,11 @@ export function crearFakes(
       if (requiere) entrantes.at(-1)!.requiereAtencion = true;
       else entrantes.forEach((m) => (m.requiereAtencion = false));
     },
+    async eliminarConversacion(jid) {
+      const antes = mensajes.length;
+      for (let i = mensajes.length - 1; i >= 0; i--) if (mensajes[i]!.jid === jid) mensajes.splice(i, 1);
+      return antes - mensajes.length;
+    },
     contarChatsConAtencion: async () => new Set(mensajes.filter((m) => m.requiereAtencion).map((m) => m.jid)).size,
   };
 
