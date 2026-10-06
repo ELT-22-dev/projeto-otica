@@ -417,7 +417,7 @@ const EsquemaMensaje = z.object({
 async function atender(req: IncomingMessage, res: ServerResponse) {
   const ruta = `${req.method} ${new URL(req.url ?? "/", "http://x").pathname}`;
   // Para o "health check" da hospedagem; não revela nada.
-  if (ruta === "GET /") return responder(res, 200, { ok: true });
+  if (ruta === "GET /" || ruta === "GET /api/salud") return responder(res, 200, { ok: true });
   if (!autorizado(req)) return responder(res, 401, { error: "no autorizado" });
 
   switch (ruta) {

@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { COOKIE_SESION, verificarToken } from "@/infra/token";
 import { RUTA_INICIAL } from "@/lib/modulos";
 
-const RUTAS_PUBLICAS = ["/login"];
+const RUTAS_PUBLICAS = ["/login", "/api/salud"];
 
 /** Barreira rápida (só confere a assinatura do cookie). Papel e usuário ativo são checados nos casos de uso. */
 export async function proxy(request: NextRequest) {
@@ -12,7 +12,7 @@ export async function proxy(request: NextRequest) {
   const esPublica = RUTAS_PUBLICAS.some((r) => pathname === r || pathname.startsWith(`${r}/`));
 
   if (!autenticado && !esPublica) return NextResponse.redirect(new URL("/login", request.url));
-  if (autenticado && esPublica) return NextResponse.redirect(new URL(RUTA_INICIAL, request.url));
+  if (autenticado && pathname === "/login") return NextResponse.redirect(new URL(RUTA_INICIAL, request.url));
   return NextResponse.next();
 }
 
